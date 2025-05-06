@@ -26,7 +26,7 @@ cd sghss_backend
 
 3. Execute o projeto usando Docker Compose:
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ## Endpoints da API
@@ -80,7 +80,7 @@ Para executar o projeto em modo de desenvolvimento:
 
 1. Inicie o banco de dados:
 ```bash
-docker-compose up -d db
+docker compose up -d db
 ```
 
 2. Execute a aplicação:

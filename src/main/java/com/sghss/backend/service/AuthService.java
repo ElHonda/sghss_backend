@@ -1,6 +1,5 @@
 package com.sghss.backend.service;
 
-import com.sghss.backend.domain.entity.Usuario;
 import com.sghss.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

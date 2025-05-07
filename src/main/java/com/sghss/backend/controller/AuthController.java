@@ -4,6 +4,7 @@ import com.sghss.backend.domain.entity.Usuario;
 import com.sghss.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +20,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<?> register(@RequestBody Usuario usuario) {
         if (usuarioRepository.existsByEmail(usuario.getEmail())) {
             return ResponseEntity.badRequest().body("Email já cadastrado");

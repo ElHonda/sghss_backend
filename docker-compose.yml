@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    container_name: sghss-backend
     ports:
       - "8080:8080"
     environment:
@@ -14,8 +15,9 @@ services:
 
   db:
     image: postgres:15-alpine
+    container_name: sghss-db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       - POSTGRES_DB=sghss_db
       - POSTGRES_USER=postgres
@@ -25,10 +27,23 @@ services:
     networks:
       - sghss-network
     healthcheck:
-      test: ["CMD","pg_isready","-q","-U","postgres"]
+      test: ["CMD","pg_isready","-q","-U","postgres","-p","5432"]
       interval: 5s
       timeout: 1s
       retries: 2
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: sghss-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - sghss-network
 
 networks:
   sghss-network:

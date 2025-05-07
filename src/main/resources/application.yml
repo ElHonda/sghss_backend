@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/sghss_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/sghss_db}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -23,7 +23,7 @@ server:
     context-path: /api
 
 jwt:
-  secret: ${JWT_SECRET:chave_secreta_muito_segura_para_geracao_do_token_jwt}
+  secret: ${JWT_SECRET}
   expiration: 86400000 # 24 horas em milissegundos
 
 logging:

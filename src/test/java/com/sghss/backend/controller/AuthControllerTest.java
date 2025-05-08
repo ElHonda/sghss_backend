@@ -6,6 +6,8 @@ import com.sghss.backend.dto.ApiResponse;
 import com.sghss.backend.repository.UsuarioRepository;
 import com.sghss.backend.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -59,219 +61,260 @@ class AuthControllerTest {
         loginRequest = new AuthController.LoginRequest("test@example.com", "password123");
     }
 
-    @Test
-    void shouldRegisterNewUser() {
-        // given
-        Usuario newUser = new Usuario();
-        newUser.setNome("Test User");
-        newUser.setEmail("test@example.com");
-        newUser.setSenha("password123");
-        newUser.setRole(Role.ADMINISTRADOR);
+    @Nested
+    @DisplayName("Testes de Registro de Usuário")
+    class RegisterTests {
 
-        when(usuarioRepository.existsByEmail(anyString())).thenReturn(false);
-        when(passwordEncoder.encode(anyString())).thenReturn("encoded_password");
-        when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
+        @Test
+        @DisplayName("Deve registrar um novo usuário com sucesso")
+        void shouldRegisterNewUser() {
+            // given
+            Usuario newUser = new Usuario();
+            newUser.setNome("Test User");
+            newUser.setEmail("test@example.com");
+            newUser.setSenha("password123");
+            newUser.setRole(Role.ADMINISTRADOR);
 
-        // when
-        ResponseEntity<ApiResponse<?>> response = authController.register(newUser);
+            when(usuarioRepository.existsByEmail(anyString())).thenReturn(false);
+            when(passwordEncoder.encode(anyString())).thenReturn("encoded_password");
+            when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
 
-        // then
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCode().value());
-        
-        ApiResponse<?> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(200, body.getStatus());
-        assertTrue(body.getMessage().contains("sucesso"));
+            // when
+            ResponseEntity<ApiResponse<?>> response = authController.register(newUser);
 
-        verify(usuarioRepository).save(any(Usuario.class));
+            // then
+            assertNotNull(response);
+            assertEquals(200, response.getStatusCode().value());
+            
+            ApiResponse<?> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(200, body.getStatus());
+            assertTrue(body.getMessage().contains("sucesso"));
+
+            verify(usuarioRepository).save(any(Usuario.class));
+        }
+
+        @Test
+        @DisplayName("Não deve registrar usuário com email já existente")
+        void shouldNotRegisterUserWithExistingEmail() {
+            // given
+            Usuario newUser = new Usuario();
+            newUser.setNome("Test User");
+            newUser.setEmail("test@example.com");
+            newUser.setSenha("password123");
+            newUser.setRole(Role.ADMINISTRADOR);
+
+            when(usuarioRepository.existsByEmail(anyString())).thenReturn(true);
+
+            // when
+            ResponseEntity<ApiResponse<?>> response = authController.register(newUser);
+
+            // then
+            assertNotNull(response);
+            assertEquals(400, response.getStatusCode().value());
+            
+            ApiResponse<?> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(400, body.getStatus());
+            assertTrue(body.getMessage().contains("já cadastrado"));
+
+            verify(usuarioRepository, never()).save(any(Usuario.class));
+        }
+
+        @Test
+        @DisplayName("Não deve registrar usuário com role inválida")
+        void shouldNotRegisterUserWithInvalidRole() {
+            // given
+            Usuario newUser = new Usuario();
+            newUser.setNome("Test User");
+            newUser.setEmail("test@example.com");
+            newUser.setSenha("password123");
+            newUser.setRole(null);
+
+            // when
+            ResponseEntity<ApiResponse<?>> response = authController.register(newUser);
+
+            // then
+            assertNotNull(response);
+            assertEquals(400, response.getStatusCode().value());
+            
+            ApiResponse<?> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(400, body.getStatus());
+            assertTrue(body.getMessage().contains("inválido"));
+
+            verify(usuarioRepository, never()).save(any(Usuario.class));
+        }
+
+        @Test
+        @DisplayName("Não deve registrar com usuário nulo")
+        void shouldNotRegisterWithNullUser() {
+            // when
+            ResponseEntity<ApiResponse<?>> response = authController.register(null);
+
+            // then
+            assertNotNull(response);
+            assertEquals(400, response.getStatusCode().value());
+            
+            ApiResponse<?> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(400, body.getStatus());
+            assertTrue(body.getMessage().contains("inválido"));
+
+            verify(usuarioRepository, never()).save(any(Usuario.class));
+        }
+
+        @Test
+        @DisplayName("Não deve registrar com campos inválidos")
+        void shouldNotRegisterWithInvalidFields() {
+            // given
+            Usuario[] invalidUsers = {
+                createInvalidUser(null, null, null, null),
+                createInvalidUser("", "", "", Role.ADMINISTRADOR),
+                createInvalidUser("   ", "   ", "   ", Role.ADMINISTRADOR),
+                createInvalidUser("Test", null, "password", null),
+                createInvalidUser(null, "test@example.com", null, Role.ADMINISTRADOR)
+            };
+
+            for (Usuario invalidUser : invalidUsers) {
+                // when
+                ResponseEntity<ApiResponse<?>> response = authController.register(invalidUser);
+
+                // then
+                assertNotNull(response);
+                assertEquals(400, response.getStatusCode().value());
+                
+                ApiResponse<?> body = response.getBody();
+                assertNotNull(body);
+                assertEquals(400, body.getStatus());
+                assertTrue(body.getMessage().contains("inválido"));
+
+                verify(usuarioRepository, never()).save(any(Usuario.class));
+            }
+        }
     }
 
-    @Test
-    void shouldNotRegisterUserWithExistingEmail() {
-        // given
-        Usuario newUser = new Usuario();
-        newUser.setNome("Test User");
-        newUser.setEmail("test@example.com");
-        newUser.setSenha("password123");
-        newUser.setRole(Role.ADMINISTRADOR);
+    @Nested
+    @DisplayName("Testes de Login")
+    class LoginTests {
 
-        when(usuarioRepository.existsByEmail(anyString())).thenReturn(true);
+        @Test
+        @DisplayName("Deve fazer login com sucesso")
+        void shouldLoginSuccessfully() {
+            // given
+            when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.of(usuario));
+            when(jwtService.generateToken(any(Usuario.class))).thenReturn("jwt_token");
 
-        // when
-        ResponseEntity<ApiResponse<?>> response = authController.register(newUser);
+            // when
+            ResponseEntity<ApiResponse<?>> response = authController.login(loginRequest);
 
-        // then
-        assertNotNull(response);
-        assertEquals(400, response.getStatusCode().value());
-        
-        ApiResponse<?> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(400, body.getStatus());
-        assertTrue(body.getMessage().contains("já cadastrado"));
+            // then
+            assertNotNull(response);
+            assertEquals(200, response.getStatusCode().value());
+            
+            ApiResponse<?> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(200, body.getStatus());
+            assertTrue(body.getMessage().contains("sucesso"));
+            
+            @SuppressWarnings("unchecked")
+            Map<String, Object> data = (Map<String, Object>) body.getData();
+            assertNotNull(data);
+            assertEquals("jwt_token", data.get("token"));
 
-        verify(usuarioRepository, never()).save(any(Usuario.class));
+            verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        }
+
+        @Test
+        @DisplayName("Não deve fazer login com credenciais inválidas")
+        void shouldNotLoginWithInvalidCredentials() {
+            // given
+            when(authenticationManager.authenticate(any()))
+                .thenThrow(new BadCredentialsException("Invalid credentials"));
+
+            // when
+            ResponseEntity<ApiResponse<?>> response = authController.login(loginRequest);
+
+            // then
+            assertNotNull(response);
+            assertEquals(401, response.getStatusCode().value());
+            
+            ApiResponse<?> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(401, body.getStatus());
+            assertTrue(body.getMessage().contains("inválidas"));
+        }
+
+        @Test
+        @DisplayName("Não deve fazer login com usuário inexistente")
+        void shouldNotLoginWithNonexistentUser() {
+            // given
+            when(authenticationManager.authenticate(any()))
+                .thenThrow(new UsernameNotFoundException("User not found"));
+
+            // when
+            ResponseEntity<ApiResponse<?>> response = authController.login(loginRequest);
+
+            // then
+            assertNotNull(response);
+            assertEquals(404, response.getStatusCode().value());
+            
+            ApiResponse<?> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(404, body.getStatus());
+            assertTrue(body.getMessage().contains("não encontrado"));
+        }
+
+        @Test
+        @DisplayName("Não deve fazer login com requisição nula")
+        void shouldNotLoginWithNullRequest() {
+            // when
+            ResponseEntity<ApiResponse<?>> response = authController.login(null);
+
+            // then
+            assertNotNull(response);
+            assertEquals(400, response.getStatusCode().value());
+            
+            ApiResponse<?> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(400, body.getStatus());
+            assertTrue(body.getMessage().contains("Credenciais inválidas"));
+        }
+
+        @Test
+        @DisplayName("Não deve fazer login com campos inválidos")
+        void shouldNotLoginWithInvalidFields() {
+            // given
+            AuthController.LoginRequest[] invalidRequests = {
+                new AuthController.LoginRequest(null, null),
+                new AuthController.LoginRequest("", ""),
+                new AuthController.LoginRequest("   ", "   "),
+                new AuthController.LoginRequest("test@example.com", null),
+                new AuthController.LoginRequest(null, "password")
+            };
+
+            for (AuthController.LoginRequest invalidRequest : invalidRequests) {
+                // when
+                ResponseEntity<ApiResponse<?>> response = authController.login(invalidRequest);
+
+                // then
+                assertNotNull(response);
+                assertEquals(400, response.getStatusCode().value());
+                
+                ApiResponse<?> body = response.getBody();
+                assertNotNull(body);
+                assertEquals(400, body.getStatus());
+                assertTrue(body.getMessage().contains("Credenciais inválidas"));
+            }
+        }
     }
 
-    @Test
-    void shouldLoginSuccessfully() {
-        // given
-        when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.of(usuario));
-        when(jwtService.generateToken(any(Usuario.class))).thenReturn("jwt_token");
-
-        // when
-        ResponseEntity<ApiResponse<?>> response = authController.login(loginRequest);
-
-        // then
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCode().value());
-        
-        ApiResponse<?> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(200, body.getStatus());
-        assertTrue(body.getMessage().contains("sucesso"));
-        
-        @SuppressWarnings("unchecked")
-        Map<String, Object> data = (Map<String, Object>) body.getData();
-        assertNotNull(data);
-        assertEquals("jwt_token", data.get("token"));
-
-        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-    }
-
-    @Test
-    void shouldNotLoginWithInvalidCredentials() {
-        // given
-        when(authenticationManager.authenticate(any()))
-            .thenThrow(new BadCredentialsException("Invalid credentials"));
-
-        // when
-        ResponseEntity<ApiResponse<?>> response = authController.login(loginRequest);
-
-        // then
-        assertNotNull(response);
-        assertEquals(401, response.getStatusCode().value());
-        
-        ApiResponse<?> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(401, body.getStatus());
-        assertTrue(body.getMessage().contains("inválidas"));
-    }
-
-    @Test
-    void shouldNotLoginWithNonexistentUser() {
-        // given
-        when(authenticationManager.authenticate(any()))
-            .thenThrow(new UsernameNotFoundException("User not found"));
-
-        // when
-        ResponseEntity<ApiResponse<?>> response = authController.login(loginRequest);
-
-        // then
-        assertNotNull(response);
-        assertEquals(404, response.getStatusCode().value());
-        
-        ApiResponse<?> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(404, body.getStatus());
-        assertTrue(body.getMessage().contains("não encontrado"));
-    }
-
-    @Test
-    void shouldNotRegisterUserWithInvalidRole() {
-        // given
-        Usuario newUser = new Usuario();
-        newUser.setNome("Test User");
-        newUser.setEmail("test@example.com");
-        newUser.setSenha("password123");
-        newUser.setRole(null);
-
-        // when
-        ResponseEntity<ApiResponse<?>> response = authController.register(newUser);
-
-        // then
-        assertNotNull(response);
-        assertEquals(400, response.getStatusCode().value());
-        
-        ApiResponse<?> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(400, body.getStatus());
-        assertTrue(body.getMessage().contains("inválido"));
-
-        verify(usuarioRepository, never()).save(any(Usuario.class));
-    }
-
-    @Test
-    void shouldNotLoginWithNullRequest() {
-        // when
-        ResponseEntity<ApiResponse<?>> response = authController.login(null);
-
-        // then
-        assertNotNull(response);
-        assertEquals(400, response.getStatusCode().value());
-        
-        ApiResponse<?> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(400, body.getStatus());
-        assertTrue(body.getMessage().contains("Credenciais inválidas"));
-    }
-
-    @Test
-    void shouldNotLoginWithEmptyCredentials() {
-        // given
-        AuthController.LoginRequest emptyRequest = new AuthController.LoginRequest("", "");
-
-        // when
-        ResponseEntity<ApiResponse<?>> response = authController.login(emptyRequest);
-
-        // then
-        assertNotNull(response);
-        assertEquals(400, response.getStatusCode().value());
-        
-        ApiResponse<?> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(400, body.getStatus());
-        assertTrue(body.getMessage().contains("Credenciais inválidas"));
-    }
-
-    @Test
-    void shouldNotRegisterWithNullUser() {
-        // when
-        ResponseEntity<ApiResponse<?>> response = authController.register(null);
-
-        // then
-        assertNotNull(response);
-        assertEquals(400, response.getStatusCode().value());
-        
-        ApiResponse<?> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(400, body.getStatus());
-        assertTrue(body.getMessage().contains("inválido"));
-
-        verify(usuarioRepository, never()).save(any(Usuario.class));
-    }
-
-    @Test
-    void shouldNotRegisterWithEmptyFields() {
-        // given
-        Usuario emptyUser = new Usuario();
-        emptyUser.setNome("");
-        emptyUser.setEmail("");
-        emptyUser.setSenha("");
-        emptyUser.setRole(Role.ADMINISTRADOR);
-
-        // when
-        ResponseEntity<ApiResponse<?>> response = authController.register(emptyUser);
-
-        // then
-        assertNotNull(response);
-        assertEquals(400, response.getStatusCode().value());
-        
-        ApiResponse<?> body = response.getBody();
-        assertNotNull(body);
-        assertEquals(400, body.getStatus());
-        assertTrue(body.getMessage().contains("inválido"));
-
-        verify(usuarioRepository, never()).save(any(Usuario.class));
+    private Usuario createInvalidUser(String nome, String email, String senha, Role role) {
+        Usuario usuario = new Usuario();
+        usuario.setNome(nome);
+        usuario.setEmail(email);
+        usuario.setSenha(senha);
+        usuario.setRole(role);
+        return usuario;
     }
 } 

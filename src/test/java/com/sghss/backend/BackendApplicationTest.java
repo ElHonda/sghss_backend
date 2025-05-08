@@ -17,12 +17,6 @@ import org.springframework.test.context.TestPropertySource;
     "server.port=8081"
 })
 class BackendApplicationTest {
-
-    @Test
-    void contextLoads() {
-        // Este teste verifica se o contexto da aplicação é carregado corretamente
-    }
-
     @Test
     void mainMethodShouldNotThrowException() {
         // Este teste verifica se o método main não lança exceções

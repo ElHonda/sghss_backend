@@ -1,8 +1,10 @@
 package com.sghss.backend.config;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+@Getter
 @Configuration
 public class JwtConfig {
     
@@ -11,12 +13,5 @@ public class JwtConfig {
     
     @Value("${jwt.expiration}")
     private Long expiration;
-    
-    public String getSecret() {
-        return secret;
-    }
-    
-    public Long getExpiration() {
-        return expiration;
-    }
+
 } 

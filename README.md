@@ -12,22 +12,22 @@ Backend do Sistema de Gestão de Saúde e Serviços Sociais (SGHSS).
 ## Configuração do Ambiente
 
 1. Clone o repositório:
-```bash
-git clone [URL_DO_REPOSITORIO]
-cd sghss_backend
-```
+    ```bash
+    git clone [URL_DO_REPOSITORIO]
+    cd sghss_backend
+    ```
 
 2. Configure as variáveis de ambiente:
-- Crie um arquivo `.env` na raiz do projeto
-- Adicione as seguintes variáveis:
-  ```
-  JWT_SECRET=sua_chave_secreta_aqui
-  ```
+   - Crie um arquivo `.env` na raiz do projeto
+   - Adicione as seguintes variáveis:
+     ```
+     JWT_SECRET=sua_chave_secreta_aqui
+     ```
 
 3. Execute o projeto usando Docker Compose:
-```bash
-docker compose up -d
-```
+    ```bash
+    docker compose up -d
+    ```
 
 ## Endpoints da API
 
@@ -79,18 +79,18 @@ docker compose up -d
 Para executar o projeto em modo de desenvolvimento:
 
 1. Inicie o banco de dados:
-```bash
-docker compose up -d db
-```
+   ```bash
+   docker compose up -d db
+   ```
 
 2. Execute a aplicação:
-```bash
-./mvnw spring-boot:run
-```
+   ```bash
+   ./mvnw spring-boot:run
+   ```
 
 ## Testes
 
-Para executar os testes:
-```bash
-./mvnw test
-``` 
+1. Para executar os testes:
+   ```bash
+   ./mvnw test
+   ``` 

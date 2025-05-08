@@ -69,7 +69,7 @@ class UsuarioTest {
 
     @Test
     void shouldImplementUserDetailsInterface() {
-        assertTrue(usuario instanceof UserDetails);
+        assertInstanceOf(UserDetails.class, usuario);
         assertEquals("test@example.com", usuario.getUsername());
         assertEquals("password", usuario.getPassword());
         assertTrue(usuario.isAccountNonExpired());
@@ -92,12 +92,12 @@ class UsuarioTest {
 
     @Test
     void shouldHandleEqualsWithNull() {
-        assertNotEquals(usuario, null);
+        assertNotEquals(null, usuario);
     }
 
     @Test
     void shouldHandleEqualsWithDifferentClass() {
-        assertNotEquals(usuario, new Object());
+        assertNotEquals(new Object(), usuario);
     }
 
     @Test

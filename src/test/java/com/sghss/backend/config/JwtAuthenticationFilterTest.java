@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -155,6 +157,46 @@ class JwtAuthenticationFilterTest {
         String token = "invalid.token.here";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
         when(jwtService.extractUsername(token)).thenThrow(new RuntimeException("Token inválido"));
+
+        // when
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        // then
+        verify(filterChain).doFilter(request, response);
+        verify(jwtService).extractUsername(token);
+        verify(userDetailsService, never()).loadUserByUsername(anyString());
+    }
+
+    @Test
+    void shouldSkipAuthenticationWhenSecurityContextAlreadyHasAuthentication() throws ServletException, IOException {
+        // given
+        String token = "valid.token.here";
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(jwtService.extractUsername(token)).thenReturn("test@example.com");
+        
+        // Simula que já existe uma autenticação no contexto
+        SecurityContextHolder.getContext().setAuthentication(
+            new UsernamePasswordAuthenticationToken(userDetails, null, new ArrayList<>())
+        );
+
+        // when
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        // then
+        verify(filterChain).doFilter(request, response);
+        verify(jwtService).extractUsername(token);
+        verify(userDetailsService, never()).loadUserByUsername(anyString());
+        
+        // Limpa o contexto após o teste
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void shouldSkipAuthenticationWhenExtractedEmailIsNull() throws ServletException, IOException {
+        // given
+        String token = "valid.token.here";
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(jwtService.extractUsername(token)).thenReturn(null);
 
         // when
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);

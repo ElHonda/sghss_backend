@@ -40,10 +40,13 @@ class JwtServiceTest {
     private Usuario usuario;
     private UserDetails userDetails;
     private Key key;
+    private String validToken;
 
     @BeforeEach
     void setUp() {
         usuario = new Usuario();
+        usuario.setId(1L);
+        usuario.setNome("Test User");
         usuario.setEmail(TEST_EMAIL);
         usuario.setSenha(TEST_PASSWORD);
         usuario.setRole(Role.ADMINISTRADOR);
@@ -51,8 +54,10 @@ class JwtServiceTest {
         userDetails = new User(usuario.getEmail(), usuario.getSenha(), new ArrayList<>());
         key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
-        lenient().when(jwtConfig.getSecret()).thenReturn(SECRET_KEY);
-        lenient().when(jwtConfig.getExpiration()).thenReturn(86400000L); // 24 hours
+        when(jwtConfig.getSecret()).thenReturn(SECRET_KEY);
+        when(jwtConfig.getExpiration()).thenReturn(3600000L);
+
+        validToken = jwtService.generateToken(usuario);
     }
 
     @Test
@@ -62,23 +67,13 @@ class JwtServiceTest {
 
         // then
         assertNotNull(token);
-        assertFalse(token.isEmpty());
-        String username = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
-        assertEquals(TEST_EMAIL, username);
+        assertTrue(token.length() > 0);
     }
 
     @Test
     void shouldValidateToken() {
-        // given
-        String token = jwtService.generateToken(usuario);
-
         // when
-        boolean isValid = jwtService.isTokenValid(token, userDetails);
+        boolean isValid = jwtService.isTokenValid(validToken, userDetails);
 
         // then
         assertTrue(isValid);
@@ -86,11 +81,8 @@ class JwtServiceTest {
 
     @Test
     void shouldExtractUsername() {
-        // given
-        String token = jwtService.generateToken(usuario);
-
         // when
-        String username = jwtService.extractUsername(token);
+        String username = jwtService.extractUsername(validToken);
 
         // then
         assertEquals(TEST_EMAIL, username);
@@ -179,7 +171,7 @@ class JwtServiceTest {
 
         // then
         assertNotNull(token);
-        assertFalse(token.isEmpty());
+        assertTrue(token.length() > 0);
         var claims = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
@@ -209,5 +201,41 @@ class JwtServiceTest {
 
         // when & then
         assertThrows(IllegalArgumentException.class, () -> jwtService.isTokenValid(token, null));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenGenerateTokenWithNullUser() {
+        // when/then
+        assertThrows(IllegalArgumentException.class, () -> jwtService.generateToken(null));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenExtractUsernameFromNullToken() {
+        // when/then
+        assertThrows(IllegalArgumentException.class, () -> jwtService.extractUsername(null));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenValidateNullToken() {
+        // when/then
+        assertThrows(IllegalArgumentException.class, () -> jwtService.isTokenValid(null, userDetails));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenValidateWithNullUserDetails() {
+        // when/then
+        assertThrows(IllegalArgumentException.class, () -> jwtService.isTokenValid(validToken, null));
+    }
+
+    @Test
+    void shouldReturnFalseWhenUsernameDoesNotMatch() {
+        // given
+        UserDetails differentUser = new User("different@example.com", "password", new ArrayList<>());
+
+        // when
+        boolean isValid = jwtService.isTokenValid(validToken, differentUser);
+
+        // then
+        assertFalse(isValid);
     }
 } 

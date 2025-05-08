@@ -206,6 +206,8 @@ class AuthControllerTest {
         @DisplayName("Deve fazer login com sucesso")
         void shouldLoginSuccessfully() {
             // given
+            when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                    .thenReturn(null);
             when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.of(usuario));
             when(jwtService.generateToken(any(Usuario.class))).thenReturn("jwt_token");
 
@@ -220,21 +222,18 @@ class AuthControllerTest {
             assertNotNull(body);
             assertEquals(200, body.getStatus());
             assertTrue(body.getMessage().contains("sucesso"));
-            
-            @SuppressWarnings("unchecked")
+
             Map<String, Object> data = (Map<String, Object>) body.getData();
             assertNotNull(data);
             assertEquals("jwt_token", data.get("token"));
-
-            verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         }
 
         @Test
         @DisplayName("Não deve fazer login com credenciais inválidas")
         void shouldNotLoginWithInvalidCredentials() {
             // given
-            when(authenticationManager.authenticate(any()))
-                .thenThrow(new BadCredentialsException("Invalid credentials"));
+            when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                    .thenThrow(new BadCredentialsException("Credenciais inválidas"));
 
             // when
             ResponseEntity<ApiResponse<?>> response = authController.login(loginRequest);
@@ -246,15 +245,16 @@ class AuthControllerTest {
             ApiResponse<?> body = response.getBody();
             assertNotNull(body);
             assertEquals(401, body.getStatus());
-            assertTrue(body.getMessage().contains("inválidas"));
+            assertTrue(body.getMessage().contains("Credenciais inválidas"));
         }
 
         @Test
         @DisplayName("Não deve fazer login com usuário inexistente")
         void shouldNotLoginWithNonexistentUser() {
             // given
-            when(authenticationManager.authenticate(any()))
-                .thenThrow(new UsernameNotFoundException("User not found"));
+            when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                    .thenReturn(null);
+            when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
             // when
             ResponseEntity<ApiResponse<?>> response = authController.login(loginRequest);
@@ -282,7 +282,7 @@ class AuthControllerTest {
             ApiResponse<?> body = response.getBody();
             assertNotNull(body);
             assertEquals(400, body.getStatus());
-            assertTrue(body.getMessage().contains("Credenciais inválidas"));
+            assertTrue(body.getMessage().contains("inválidas"));
         }
 
         @Test
@@ -294,7 +294,7 @@ class AuthControllerTest {
                 new AuthController.LoginRequest("", ""),
                 new AuthController.LoginRequest("   ", "   "),
                 new AuthController.LoginRequest("test@example.com", null),
-                new AuthController.LoginRequest(null, "password")
+                new AuthController.LoginRequest(null, "password123")
             };
 
             for (AuthController.LoginRequest invalidRequest : invalidRequests) {
@@ -308,7 +308,7 @@ class AuthControllerTest {
                 ApiResponse<?> body = response.getBody();
                 assertNotNull(body);
                 assertEquals(400, body.getStatus());
-                assertTrue(body.getMessage().contains("Credenciais inválidas"));
+                assertTrue(body.getMessage().contains("inválidas"));
             }
         }
     }

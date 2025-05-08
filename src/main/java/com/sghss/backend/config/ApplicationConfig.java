@@ -21,8 +21,13 @@ public class ApplicationConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> usuarioRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+        return username -> {
+            if (username == null || username.trim().isEmpty()) {
+                throw new IllegalArgumentException("Email não pode ser nulo ou vazio");
+            }
+            return usuarioRepository.findByEmail(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+        };
     }
 
     @Bean

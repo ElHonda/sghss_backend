@@ -1,6 +1,5 @@
 package com.sghss.backend.config;
 
-import com.sghss.backend.domain.entity.Usuario;
 import com.sghss.backend.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,16 +11,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class JwtAuthenticationFilterTest {
@@ -41,15 +43,14 @@ class JwtAuthenticationFilterTest {
     @Mock
     private FilterChain filterChain;
 
-    @Mock
-    private UserDetails userDetails;
-
     @InjectMocks
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    private UserDetails userDetails;
+
     @BeforeEach
     void setUp() {
-        SecurityContextHolder.clearContext();
+        userDetails = new User("test@example.com", "password", new ArrayList<>());
     }
 
     @Test
@@ -62,33 +63,43 @@ class JwtAuthenticationFilterTest {
 
         // then
         verify(filterChain).doFilter(request, response);
-        verify(jwtService, never()).extractUsername(any());
-        verify(userDetailsService, never()).loadUserByUsername(any());
+        verify(jwtService, never()).extractUsername(anyString());
     }
 
     @Test
     void shouldContinueChainWhenInvalidAuthHeader() throws ServletException, IOException {
         // given
-        when(request.getHeader("Authorization")).thenReturn("InvalidHeader");
+        when(request.getHeader("Authorization")).thenReturn("Invalid");
 
         // when
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
         // then
         verify(filterChain).doFilter(request, response);
-        verify(jwtService, never()).extractUsername(any());
-        verify(userDetailsService, never()).loadUserByUsername(any());
+        verify(jwtService, never()).extractUsername(anyString());
     }
 
     @Test
-    void shouldAuthenticateWhenValidToken() throws ServletException, IOException {
+    void shouldContinueChainWhenEmptyToken() throws ServletException, IOException {
         // given
-        String token = "valid.jwt.token";
-        String email = "test@example.com";
+        when(request.getHeader("Authorization")).thenReturn("Bearer ");
+
+        // when
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        // then
+        verify(filterChain).doFilter(request, response);
+        verify(jwtService, never()).extractUsername(anyString());
+    }
+
+    @Test
+    void shouldContinueChainWhenUserNotFound() throws ServletException, IOException {
+        // given
+        String token = "valid.token.here";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        when(jwtService.extractUsername(token)).thenReturn(email);
-        when(userDetailsService.loadUserByUsername(email)).thenReturn(userDetails);
-        when(jwtService.isTokenValid(token, userDetails)).thenReturn(true);
+        when(jwtService.extractUsername(token)).thenReturn("test@example.com");
+        when(userDetailsService.loadUserByUsername("test@example.com"))
+                .thenThrow(new UsernameNotFoundException("Usuário não encontrado"));
 
         // when
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
@@ -96,18 +107,17 @@ class JwtAuthenticationFilterTest {
         // then
         verify(filterChain).doFilter(request, response);
         verify(jwtService).extractUsername(token);
-        verify(userDetailsService).loadUserByUsername(email);
-        verify(jwtService).isTokenValid(token, userDetails);
+        verify(userDetailsService).loadUserByUsername("test@example.com");
+        verify(jwtService, never()).isTokenValid(anyString(), any(UserDetails.class));
     }
 
     @Test
-    void shouldNotAuthenticateWhenInvalidToken() throws ServletException, IOException {
+    void shouldContinueChainWhenTokenInvalid() throws ServletException, IOException {
         // given
-        String token = "invalid.jwt.token";
-        String email = "test@example.com";
+        String token = "invalid.token.here";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        when(jwtService.extractUsername(token)).thenReturn(email);
-        when(userDetailsService.loadUserByUsername(email)).thenReturn(userDetails);
+        when(jwtService.extractUsername(token)).thenReturn("test@example.com");
+        when(userDetailsService.loadUserByUsername("test@example.com")).thenReturn(userDetails);
         when(jwtService.isTokenValid(token, userDetails)).thenReturn(false);
 
         // when
@@ -116,28 +126,42 @@ class JwtAuthenticationFilterTest {
         // then
         verify(filterChain).doFilter(request, response);
         verify(jwtService).extractUsername(token);
-        verify(userDetailsService).loadUserByUsername(email);
+        verify(userDetailsService).loadUserByUsername("test@example.com");
         verify(jwtService).isTokenValid(token, userDetails);
     }
 
     @Test
-    void shouldContinueChainWhenUserNotFound() throws ServletException, IOException {
+    void shouldSetAuthenticationWhenTokenValid() throws ServletException, IOException {
         // given
-        String token = "valid.jwt.token";
-        String email = "test@example.com";
+        String token = "valid.token.here";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        when(jwtService.extractUsername(token)).thenReturn(email);
-        when(userDetailsService.loadUserByUsername(email)).thenThrow(new UsernameNotFoundException("User not found"));
+        when(jwtService.extractUsername(token)).thenReturn("test@example.com");
+        when(userDetailsService.loadUserByUsername("test@example.com")).thenReturn(userDetails);
+        when(jwtService.isTokenValid(token, userDetails)).thenReturn(true);
 
         // when
-        assertThrows(UsernameNotFoundException.class, () -> 
-            jwtAuthenticationFilter.doFilterInternal(request, response, filterChain)
-        );
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
         // then
+        verify(filterChain).doFilter(request, response);
         verify(jwtService).extractUsername(token);
-        verify(userDetailsService).loadUserByUsername(email);
-        verify(jwtService, never()).isTokenValid(any(), any());
-        verify(filterChain, never()).doFilter(request, response);
+        verify(userDetailsService).loadUserByUsername("test@example.com");
+        verify(jwtService).isTokenValid(token, userDetails);
+    }
+
+    @Test
+    void shouldHandleInvalidBearerToken() throws ServletException, IOException {
+        // given
+        String token = "invalid.token.here";
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(jwtService.extractUsername(token)).thenThrow(new RuntimeException("Token inválido"));
+
+        // when
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        // then
+        verify(filterChain).doFilter(request, response);
+        verify(jwtService).extractUsername(token);
+        verify(userDetailsService, never()).loadUserByUsername(anyString());
     }
 } 

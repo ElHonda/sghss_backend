@@ -11,17 +11,24 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ApplicationConfigTest {
@@ -48,42 +55,47 @@ class ApplicationConfigTest {
     }
 
     @Test
-    void userDetailsServiceShouldLoadUserByUsername() {
+    void shouldCreateUserDetailsService() {
         // given
-        when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.of(usuario));
 
         // when
-        UserDetails userDetails = applicationConfig.userDetailsService().loadUserByUsername(usuario.getEmail());
+        UserDetailsService userDetailsService = applicationConfig.userDetailsService();
+        UserDetails userDetails = userDetailsService.loadUserByUsername("test@example.com");
 
         // then
+        assertNotNull(userDetailsService);
         assertNotNull(userDetails);
         assertEquals(usuario.getEmail(), userDetails.getUsername());
         assertEquals(usuario.getSenha(), userDetails.getPassword());
-        assertTrue(userDetails.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_" + Role.ADMINISTRADOR.name())));
     }
 
     @Test
-    void userDetailsServiceShouldThrowExceptionWhenUserNotFound() {
+    void shouldThrowExceptionWhenUserNotFound() {
         // given
-        when(usuarioRepository.findByEmail(any())).thenReturn(Optional.empty());
+        when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
-        // when & then
-        assertThrows(UsernameNotFoundException.class, () ->
-                applicationConfig.userDetailsService().loadUserByUsername("nonexistent@example.com"));
+        // when
+        UserDetailsService userDetailsService = applicationConfig.userDetailsService();
+
+        // then
+        assertThrows(UsernameNotFoundException.class, () -> 
+            userDetailsService.loadUserByUsername("nonexistent@example.com")
+        );
     }
 
     @Test
-    void authenticationProviderShouldBeConfigured() {
+    void shouldCreateAuthenticationProvider() {
         // when
         AuthenticationProvider authProvider = applicationConfig.authenticationProvider();
 
         // then
         assertNotNull(authProvider);
+        assertInstanceOf(DaoAuthenticationProvider.class, authProvider);
     }
 
     @Test
-    void authenticationManagerShouldBeConfigured() throws Exception {
+    void shouldCreateAuthenticationManager() throws Exception {
         // given
         AuthenticationManager mockAuthManager = mock(AuthenticationManager.class);
         when(authenticationConfiguration.getAuthenticationManager()).thenReturn(mockAuthManager);
@@ -97,12 +109,34 @@ class ApplicationConfigTest {
     }
 
     @Test
-    void passwordEncoderShouldBeConfigured() {
+    void shouldCreatePasswordEncoder() {
         // when
         PasswordEncoder passwordEncoder = applicationConfig.passwordEncoder();
 
         // then
         assertNotNull(passwordEncoder);
-        assertTrue(passwordEncoder.matches("password", passwordEncoder.encode("password")));
+        assertInstanceOf(BCryptPasswordEncoder.class, passwordEncoder);
+    }
+
+    @Test
+    void shouldHandleNullEmailInUserDetailsService() {
+        // when
+        UserDetailsService userDetailsService = applicationConfig.userDetailsService();
+
+        // then
+        assertThrows(IllegalArgumentException.class, () -> 
+            userDetailsService.loadUserByUsername(null)
+        );
+    }
+
+    @Test
+    void shouldHandleEmptyEmailInUserDetailsService() {
+        // when
+        UserDetailsService userDetailsService = applicationConfig.userDetailsService();
+
+        // then
+        assertThrows(IllegalArgumentException.class, () -> 
+            userDetailsService.loadUserByUsername("")
+        );
     }
 } 

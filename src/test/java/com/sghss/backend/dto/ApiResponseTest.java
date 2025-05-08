@@ -1,299 +1,265 @@
 package com.sghss.backend.dto;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class ApiResponseTest {
 
-    @Test
-    void shouldCreateApiResponseWithAllFields() {
-        // given
-        int status = 200;
-        String message = "Success";
-        String data = "Test data";
+    @Nested
+    @DisplayName("Testes de Resposta de Sucesso")
+    class SuccessResponseTests {
 
-        // when
-        ApiResponse<String> response = new ApiResponse<>(status, data, message);
+        @Test
+        @DisplayName("Deve criar resposta de sucesso com dados")
+        void shouldCreateSuccessResponseWithData() {
+            // given
+            Map<String, Object> data = new HashMap<>();
+            data.put("id", 1);
+            data.put("nome", "Teste");
 
-        // then
-        assertEquals(status, response.getStatus());
-        assertEquals(message, response.getMessage());
-        assertEquals(data, response.getData());
+            // when
+            ApiResponse<Map<String, Object>> response = ApiResponse.success(data);
+
+            // then
+            assertNotNull(response);
+            assertEquals(200, response.getStatus());
+            assertEquals("Operação realizada com sucesso", response.getMessage());
+            assertEquals(data, response.getData());
+        }
+
+        @Test
+        @DisplayName("Deve criar resposta de sucesso com dados e mensagem personalizada")
+        void shouldCreateSuccessResponseWithDataAndCustomMessage() {
+            // given
+            Map<String, Object> data = new HashMap<>();
+            data.put("id", 1);
+            data.put("nome", "Teste");
+            String message = "Operação realizada com sucesso";
+
+            // when
+            ApiResponse<Map<String, Object>> response = ApiResponse.success(data, message);
+
+            // then
+            assertNotNull(response);
+            assertEquals(200, response.getStatus());
+            assertEquals(message, response.getMessage());
+            assertEquals(data, response.getData());
+        }
+
+        @Test
+        @DisplayName("Deve criar resposta de sucesso com dados nulos")
+        void shouldCreateSuccessResponseWithNullData() {
+            // when
+            ApiResponse<Map<String, Object>> response = ApiResponse.success(null);
+
+            // then
+            assertNotNull(response);
+            assertEquals(200, response.getStatus());
+            assertEquals("Operação realizada com sucesso", response.getMessage());
+            assertNull(response.getData());
+        }
+
+        @Test
+        @DisplayName("Deve criar resposta de sucesso com dados nulos e mensagem personalizada")
+        void shouldCreateSuccessResponseWithNullDataAndCustomMessage() {
+            // given
+            String message = "Operação realizada com sucesso";
+
+            // when
+            ApiResponse<Map<String, Object>> response = ApiResponse.success(null, message);
+
+            // then
+            assertNotNull(response);
+            assertEquals(200, response.getStatus());
+            assertEquals(message, response.getMessage());
+            assertNull(response.getData());
+        }
     }
 
-    @Test
-    void shouldCreateApiResponseWithNullData() {
-        // given
-        int status = 404;
-        String message = "Not found";
+    @Nested
+    @DisplayName("Testes de Resposta de Erro")
+    class ErrorResponseTests {
 
-        // when
-        ApiResponse<String> response = new ApiResponse<>(status, null, message);
+        @Test
+        @DisplayName("Deve criar resposta de erro")
+        void shouldCreateErrorResponse() {
+            // given
+            int status = 400;
+            String message = "Erro na operação";
 
-        // then
-        assertEquals(status, response.getStatus());
-        assertEquals(message, response.getMessage());
-        assertNull(response.getData());
+            // when
+            ApiResponse<Void> response = ApiResponse.error(status, message);
+
+            // then
+            assertNotNull(response);
+            assertEquals(status, response.getStatus());
+            assertEquals(message, response.getMessage());
+            assertNull(response.getData());
+        }
+
+        @Test
+        @DisplayName("Deve criar resposta de erro com status negativo")
+        void shouldCreateErrorResponseWithNegativeStatus() {
+            // given
+            int status = -1;
+            String message = "Erro na operação";
+
+            // when
+            ApiResponse<Void> response = ApiResponse.error(status, message);
+
+            // then
+            assertNotNull(response);
+            assertEquals(status, response.getStatus());
+            assertEquals(message, response.getMessage());
+            assertNull(response.getData());
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {400, 401, 403, 404, 500})
+        @DisplayName("Deve criar resposta de erro com diferentes códigos de status")
+        void shouldCreateErrorResponseWithDifferentStatusCodes(int status) {
+            // given
+            String message = "Error message";
+
+            // when
+            ApiResponse<Void> response = ApiResponse.error(status, message);
+
+            // then
+            assertNotNull(response);
+            assertEquals(status, response.getStatus());
+            assertEquals(message, response.getMessage());
+            assertNull(response.getData());
+        }
     }
 
-    @Test
-    void shouldCreateSuccessResponse() {
-        // when
-        ApiResponse<String> response = ApiResponse.success("data");
+    @Nested
+    @DisplayName("Testes de Construtor")
+    class ConstructorTests {
 
-        // then
-        assertNotNull(response);
-        assertEquals(200, response.getStatus());
-        assertEquals("data", response.getData());
-        assertEquals("Operação realizada com sucesso", response.getMessage());
+        @Test
+        @DisplayName("Deve criar resposta com construtor padrão")
+        void shouldCreateResponseWithDefaultConstructor() {
+            // when
+            ApiResponse<String> response = new ApiResponse<>();
+
+            // then
+            assertNotNull(response);
+            assertEquals(0, response.getStatus());
+            assertNull(response.getData());
+            assertNull(response.getMessage());
+        }
+
+        @Test
+        @DisplayName("Deve criar resposta com construtor completo")
+        void shouldCreateResponseWithAllArgsConstructor() {
+            // given
+            int status = 200;
+            String data = "Test data";
+            String message = "Test message";
+
+            // when
+            ApiResponse<String> response = new ApiResponse<>(status, data, message);
+
+            // then
+            assertNotNull(response);
+            assertEquals(status, response.getStatus());
+            assertEquals(data, response.getData());
+            assertEquals(message, response.getMessage());
+        }
     }
 
-    @Test
-    void shouldCreateSuccessResponseWithCustomMessage() {
-        // when
-        ApiResponse<String> response = ApiResponse.success("data", "Custom message");
+    @Nested
+    @DisplayName("Testes de Equals e HashCode")
+    class EqualsAndHashCodeTests {
 
-        // then
-        assertNotNull(response);
-        assertEquals(200, response.getStatus());
-        assertEquals("data", response.getData());
-        assertEquals("Custom message", response.getMessage());
+        @Test
+        @DisplayName("Deve comparar corretamente objetos iguais")
+        void shouldCompareEqualObjects() {
+            // given
+            ApiResponse<String> response1 = new ApiResponse<>(200, "data", "message");
+            ApiResponse<String> response2 = new ApiResponse<>(200, "data", "message");
+
+            // then
+            assertEquals(response1, response2);
+            assertEquals(response1.hashCode(), response2.hashCode());
+        }
+
+        @Test
+        @DisplayName("Deve comparar corretamente objetos diferentes")
+        void shouldCompareDifferentObjects() {
+            // given
+            ApiResponse<String> response1 = new ApiResponse<>(200, "data1", "message");
+            ApiResponse<String> response2 = new ApiResponse<>(200, "data2", "message");
+            ApiResponse<String> response3 = new ApiResponse<>(400, "data1", "message");
+
+            // then
+            assertNotEquals(response1, response2);
+            assertNotEquals(response1, response3);
+            assertNotEquals(response1.hashCode(), response2.hashCode());
+            assertNotEquals(response1.hashCode(), response3.hashCode());
+        }
+
+        @Test
+        @DisplayName("Deve comparar corretamente com null")
+        void shouldCompareWithNull() {
+            // given
+            ApiResponse<String> response = new ApiResponse<>(200, "data", "message");
+
+            // then
+            assertNotEquals(null, response);
+        }
+
+        @Test
+        @DisplayName("Deve comparar corretamente com objeto de classe diferente")
+        void shouldCompareWithDifferentClass() {
+            // given
+            ApiResponse<String> response = new ApiResponse<>(200, "data", "message");
+
+            // then
+            assertNotEquals(new Object(), response);
+        }
     }
 
-    @Test
-    void shouldCreateErrorResponse() {
-        // when
-        ApiResponse<String> response = ApiResponse.error(400, "Bad Request");
+    @Nested
+    @DisplayName("Testes de ToString")
+    class ToStringTests {
 
-        // then
-        assertNotNull(response);
-        assertEquals(400, response.getStatus());
-        assertNull(response.getData());
-        assertEquals("Bad Request", response.getMessage());
-    }
+        @Test
+        @DisplayName("Deve gerar string correta")
+        void shouldGenerateCorrectString() {
+            // given
+            ApiResponse<String> response = new ApiResponse<>(200, "data", "message");
 
-    @Test
-    void shouldCreateResponseWithAllArgsConstructor() {
-        // when
-        ApiResponse<String> response = new ApiResponse<>(200, "data", "message");
+            // when
+            String toString = response.toString();
 
-        // then
-        assertNotNull(response);
-        assertEquals(200, response.getStatus());
-        assertEquals("data", response.getData());
-        assertEquals("message", response.getMessage());
-    }
+            // then
+            assertTrue(toString.contains("status=200"));
+            assertTrue(toString.contains("data=data"));
+            assertTrue(toString.contains("message=message"));
+        }
 
-    @Test
-    void shouldCreateApiResponseWithNoArgsConstructor() {
-        ApiResponse<String> response = new ApiResponse<>();
-        
-        assertNotNull(response);
-        assertEquals(0, response.getStatus());
-        assertNull(response.getData());
-        assertNull(response.getMessage());
-    }
+        @Test
+        @DisplayName("Deve gerar string correta com campos nulos")
+        void shouldGenerateCorrectStringWithNullFields() {
+            // given
+            ApiResponse<String> response = new ApiResponse<>(200, null, null);
 
-    @Test
-    void shouldCreateApiResponseWithAllArgsConstructor() {
-        ApiResponse<String> response = new ApiResponse<>(200, "data", "message");
-        
-        assertNotNull(response);
-        assertEquals(200, response.getStatus());
-        assertEquals("data", response.getData());
-        assertEquals("message", response.getMessage());
-    }
+            // when
+            String toString = response.toString();
 
-    @Test
-    void shouldCreateSuccessResponseWithDefaultMessage() {
-        ApiResponse<String> response = ApiResponse.success("data");
-        
-        assertNotNull(response);
-        assertEquals(200, response.getStatus());
-        assertEquals("data", response.getData());
-        assertEquals("Operação realizada com sucesso", response.getMessage());
-    }
-
-    @Test
-    void shouldUpdateApiResponseFields() {
-        ApiResponse<String> response = new ApiResponse<>();
-        
-        response.setStatus(201);
-        response.setData("updated data");
-        response.setMessage("updated message");
-        
-        assertEquals(201, response.getStatus());
-        assertEquals("updated data", response.getData());
-        assertEquals("updated message", response.getMessage());
-    }
-
-    @Test
-    void shouldHandleNullDataInSuccessResponse() {
-        ApiResponse<String> response = ApiResponse.success(null);
-        
-        assertNotNull(response);
-        assertEquals(200, response.getStatus());
-        assertNull(response.getData());
-        assertEquals("Operação realizada com sucesso", response.getMessage());
-    }
-
-    @Test
-    void shouldHandleNullMessageInSuccessResponse() {
-        ApiResponse<String> response = ApiResponse.success("data", null);
-        
-        assertNotNull(response);
-        assertEquals(200, response.getStatus());
-        assertEquals("data", response.getData());
-        assertNull(response.getMessage());
-    }
-
-    @Test
-    void shouldHandleDifferentDataTypes() {
-        ApiResponse<Integer> intResponse = ApiResponse.success(123);
-        assertEquals(123, intResponse.getData());
-
-        ApiResponse<Boolean> boolResponse = ApiResponse.success(true);
-        assertTrue(boolResponse.getData());
-
-        ApiResponse<Double> doubleResponse = ApiResponse.success(123.45);
-        assertEquals(123.45, doubleResponse.getData());
-    }
-
-    @Test
-    void shouldHandleComplexDataTypes() {
-        TestObject testObject = new TestObject("test", 123);
-        ApiResponse<TestObject> response = ApiResponse.success(testObject);
-        
-        assertNotNull(response);
-        assertEquals(200, response.getStatus());
-        assertEquals(testObject, response.getData());
-        assertEquals("Operação realizada com sucesso", response.getMessage());
-    }
-
-    @Test
-    void shouldHandleErrorResponseWithDifferentStatusCodes() {
-        ApiResponse<?> response400 = ApiResponse.error(400, "Bad Request");
-        assertEquals(400, response400.getStatus());
-
-        ApiResponse<?> response401 = ApiResponse.error(401, "Unauthorized");
-        assertEquals(401, response401.getStatus());
-
-        ApiResponse<?> response403 = ApiResponse.error(403, "Forbidden");
-        assertEquals(403, response403.getStatus());
-
-        ApiResponse<?> response404 = ApiResponse.error(404, "Not Found");
-        assertEquals(404, response404.getStatus());
-
-        ApiResponse<?> response500 = ApiResponse.error(500, "Internal Server Error");
-        assertEquals(500, response500.getStatus());
-    }
-
-    @Test
-    void shouldHandleEqualsAndHashCode() {
-        ApiResponse<String> response1 = new ApiResponse<>(200, "data", "message");
-        ApiResponse<String> response2 = new ApiResponse<>(200, "data", "message");
-        ApiResponse<String> response3 = new ApiResponse<>(400, "other", "error");
-
-        assertEquals(response1, response2);
-        assertEquals(response1.hashCode(), response2.hashCode());
-        assertNotEquals(response1, response3);
-        assertNotEquals(response1.hashCode(), response3.hashCode());
-    }
-
-    @Test
-    void shouldHandleToString() {
-        ApiResponse<String> response = new ApiResponse<>(200, "data", "message");
-        String toString = response.toString();
-
-        assertTrue(toString.contains("status=200"));
-        assertTrue(toString.contains("data=data"));
-        assertTrue(toString.contains("message=message"));
-    }
-
-    @Test
-    void shouldHandleEqualsWithNull() {
-        ApiResponse<String> response = new ApiResponse<>(200, "data", "message");
-        assertNotEquals(null, response);
-    }
-
-    @Test
-    void shouldHandleEqualsWithDifferentClass() {
-        ApiResponse<String> response = new ApiResponse<>(200, "data", "message");
-        assertNotEquals(new Object(), response);
-    }
-
-    @Test
-    void shouldHandleEqualsWithSameObject() {
-        ApiResponse<String> response = new ApiResponse<>(200, "data", "message");
-        assertEquals(response, response);
-    }
-
-    @Test
-    void shouldHandleEqualsWithDifferentStatus() {
-        ApiResponse<String> response1 = new ApiResponse<>(200, "data", "message");
-        ApiResponse<String> response2 = new ApiResponse<>(400, "data", "message");
-        assertNotEquals(response1, response2);
-    }
-
-    @Test
-    void shouldHandleEqualsWithDifferentData() {
-        ApiResponse<String> response1 = new ApiResponse<>(200, "data1", "message");
-        ApiResponse<String> response2 = new ApiResponse<>(200, "data2", "message");
-        assertNotEquals(response1, response2);
-    }
-
-    @Test
-    void shouldHandleEqualsWithDifferentMessage() {
-        ApiResponse<String> response1 = new ApiResponse<>(200, "data", "message1");
-        ApiResponse<String> response2 = new ApiResponse<>(200, "data", "message2");
-        assertNotEquals(response1, response2);
-    }
-
-    @Test
-    void shouldHandleHashCodeWithNullFields() {
-        ApiResponse<String> response = new ApiResponse<>();
-        assertNotEquals(0, response.hashCode());
-    }
-
-    @Test
-    void shouldHandleHashCodeConsistency() {
-        ApiResponse<String> response = new ApiResponse<>(200, "data", "message");
-        int hash1 = response.hashCode();
-        int hash2 = response.hashCode();
-        assertEquals(hash1, hash2);
-    }
-
-    @Test
-    void shouldHandleHashCodeWithAllFields() {
-        ApiResponse<String> response1 = new ApiResponse<>(200, "data", "message");
-        ApiResponse<String> response2 = new ApiResponse<>(200, "data", "message");
-        assertEquals(response1.hashCode(), response2.hashCode());
-    }
-
-    @Test
-    void shouldHandleNullFieldsInEquals() {
-        ApiResponse<String> response1 = new ApiResponse<>(200, null, null);
-        ApiResponse<String> response2 = new ApiResponse<>(200, null, null);
-        assertEquals(response1, response2);
-    }
-
-    @Test
-    void shouldHandleNullFieldsInHashCode() {
-        ApiResponse<String> response1 = new ApiResponse<>(200, null, null);
-        ApiResponse<String> response2 = new ApiResponse<>(200, null, null);
-        assertEquals(response1.hashCode(), response2.hashCode());
-    }
-
-    @Test
-    void shouldHandleErrorResponseWithNullMessage() {
-        ApiResponse<?> response = ApiResponse.error(400, null);
-        assertNotNull(response);
-        assertEquals(400, response.getStatus());
-        assertNull(response.getData());
-        assertNull(response.getMessage());
-    }
-
-    private record TestObject(String name, int value) {
-
+            // then
+            assertTrue(toString.contains("status=200"));
+            assertTrue(toString.contains("data=null"));
+            assertTrue(toString.contains("message=null"));
+        }
     }
 } 

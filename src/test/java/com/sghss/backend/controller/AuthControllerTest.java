@@ -196,6 +196,96 @@ class AuthControllerTest {
                 verify(usuarioRepository, never()).save(any(Usuario.class));
             }
         }
+
+        @Test
+        @DisplayName("Não deve registrar com senha inválida")
+        void shouldNotRegisterWithInvalidPassword() {
+            // given
+            Usuario[] invalidUsers = {
+                createInvalidUser("Test User", "test@example.com", null, Role.ADMINISTRADOR),
+                createInvalidUser("Test User", "test@example.com", "", Role.ADMINISTRADOR),
+                createInvalidUser("Test User", "test@example.com", "   ", Role.ADMINISTRADOR)
+            };
+
+            for (Usuario invalidUser : invalidUsers) {
+                // when
+                ResponseEntity<ApiResponse<?>> response = authController.register(invalidUser);
+
+                // then
+                assertNotNull(response);
+                assertEquals(400, response.getStatusCode().value());
+                
+                ApiResponse<?> body = response.getBody();
+                assertNotNull(body);
+                assertEquals(400, body.getStatus());
+                assertTrue(body.getMessage().contains("inválido"));
+
+                verify(usuarioRepository, never()).save(any(Usuario.class));
+            }
+        }
+
+        @Test
+        @DisplayName("Não deve registrar com senha nula")
+        void shouldNotRegisterWithNullPassword() {
+            // given
+            Usuario usuario = createInvalidUser("Test User", "test@example.com", null, Role.ADMINISTRADOR);
+
+            // when
+            ResponseEntity<ApiResponse<?>> response = authController.register(usuario);
+
+            // then
+            assertNotNull(response);
+            assertEquals(400, response.getStatusCode().value());
+            
+            ApiResponse<?> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(400, body.getStatus());
+            assertTrue(body.getMessage().contains("inválido"));
+
+            verify(usuarioRepository, never()).save(any(Usuario.class));
+        }
+
+        @Test
+        @DisplayName("Não deve registrar com senha vazia")
+        void shouldNotRegisterWithEmptyPassword() {
+            // given
+            Usuario usuario = createInvalidUser("Test User", "test@example.com", "", Role.ADMINISTRADOR);
+
+            // when
+            ResponseEntity<ApiResponse<?>> response = authController.register(usuario);
+
+            // then
+            assertNotNull(response);
+            assertEquals(400, response.getStatusCode().value());
+            
+            ApiResponse<?> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(400, body.getStatus());
+            assertTrue(body.getMessage().contains("inválido"));
+
+            verify(usuarioRepository, never()).save(any(Usuario.class));
+        }
+
+        @Test
+        @DisplayName("Não deve registrar com senha em branco")
+        void shouldNotRegisterWithBlankPassword() {
+            // given
+            Usuario usuario = createInvalidUser("Test User", "test@example.com", "   ", Role.ADMINISTRADOR);
+
+            // when
+            ResponseEntity<ApiResponse<?>> response = authController.register(usuario);
+
+            // then
+            assertNotNull(response);
+            assertEquals(400, response.getStatusCode().value());
+            
+            ApiResponse<?> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(400, body.getStatus());
+            assertTrue(body.getMessage().contains("inválido"));
+
+            verify(usuarioRepository, never()).save(any(Usuario.class));
+        }
     }
 
     @Nested
@@ -310,6 +400,28 @@ class AuthControllerTest {
                 assertEquals(400, body.getStatus());
                 assertTrue(body.getMessage().contains("inválidas"));
             }
+        }
+
+        @Test
+        @DisplayName("Não deve fazer login quando usuário não é encontrado após autenticação")
+        void shouldNotLoginWhenUserNotFoundAfterAuthentication() {
+            // given
+            when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                    .thenReturn(null);
+            when(usuarioRepository.findByEmail(anyString()))
+                    .thenReturn(Optional.empty());
+
+            // when
+            ResponseEntity<ApiResponse<?>> response = authController.login(loginRequest);
+
+            // then
+            assertNotNull(response);
+            assertEquals(404, response.getStatusCode().value());
+            
+            ApiResponse<?> body = response.getBody();
+            assertNotNull(body);
+            assertEquals(404, body.getStatus());
+            assertTrue(body.getMessage().contains("não encontrado"));
         }
     }
 

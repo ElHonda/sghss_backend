@@ -15,6 +15,9 @@ public class AuthService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email não pode ser nulo ou vazio");
+        }
         return usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
     }

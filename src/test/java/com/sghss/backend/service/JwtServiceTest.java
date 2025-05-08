@@ -7,6 +7,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,12 +21,8 @@ import java.security.Key;
 import java.util.ArrayList;
 import java.util.Date;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class JwtServiceTest {
@@ -42,6 +39,7 @@ class JwtServiceTest {
 
     private Usuario usuario;
     private UserDetails userDetails;
+    private Key key;
 
     @BeforeEach
     void setUp() {
@@ -51,27 +49,32 @@ class JwtServiceTest {
         usuario.setRole(Role.ADMINISTRADOR);
 
         userDetails = new User(usuario.getEmail(), usuario.getSenha(), new ArrayList<>());
+        key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+
+        lenient().when(jwtConfig.getSecret()).thenReturn(SECRET_KEY);
+        lenient().when(jwtConfig.getExpiration()).thenReturn(86400000L); // 24 hours
     }
 
     @Test
     void shouldGenerateToken() {
-        // given
-        when(jwtConfig.getSecret()).thenReturn(SECRET_KEY);
-        when(jwtConfig.getExpiration()).thenReturn(86400000L); // 24 hours
-
         // when
         String token = jwtService.generateToken(usuario);
 
         // then
         assertNotNull(token);
         assertFalse(token.isEmpty());
+        String username = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+        assertEquals(TEST_EMAIL, username);
     }
 
     @Test
     void shouldValidateToken() {
         // given
-        when(jwtConfig.getSecret()).thenReturn(SECRET_KEY);
-        when(jwtConfig.getExpiration()).thenReturn(86400000L); // 24 hours
         String token = jwtService.generateToken(usuario);
 
         // when
@@ -84,8 +87,6 @@ class JwtServiceTest {
     @Test
     void shouldExtractUsername() {
         // given
-        when(jwtConfig.getSecret()).thenReturn(SECRET_KEY);
-        when(jwtConfig.getExpiration()).thenReturn(86400000L); // 24 hours
         String token = jwtService.generateToken(usuario);
 
         // when
@@ -107,19 +108,106 @@ class JwtServiceTest {
     @Test
     void shouldThrowExceptionForExpiredToken() {
         // given
-        when(jwtConfig.getSecret()).thenReturn(SECRET_KEY);
-        
-        // Criar um token com data de expiração fixa no passado
-        Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
-        Date pastDate = new Date(0); // 1 de janeiro de 1970
         String expiredToken = Jwts.builder()
                 .setSubject(TEST_EMAIL)
-                .setIssuedAt(pastDate)
-                .setExpiration(pastDate)
+                .setIssuedAt(new Date(0))
+                .setExpiration(new Date(0))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
         // when & then
         assertThrows(ExpiredJwtException.class, () -> jwtService.extractUsername(expiredToken));
+    }
+
+    @Test
+    void shouldNotValidateTokenWithDifferentUsername() {
+        // given
+        String token = jwtService.generateToken(usuario);
+        UserDetails differentUser = new User("different@example.com", "password", new ArrayList<>());
+
+        // when
+        boolean isValid = jwtService.isTokenValid(token, differentUser);
+
+        // then
+        assertFalse(isValid);
+    }
+
+    @Test
+    void shouldNotValidateExpiredToken() {
+        // given
+        String expiredToken = Jwts.builder()
+                .setSubject(TEST_EMAIL)
+                .setIssuedAt(new Date(0))
+                .setExpiration(new Date(0))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+
+        // when
+        try {
+            jwtService.isTokenValid(expiredToken, userDetails);
+            fail("Expected ExpiredJwtException");
+        } catch (ExpiredJwtException e) {
+            // expected
+        }
+    }
+
+    @Test
+    void shouldNotValidateTokenWithInvalidSignature() {
+        // given
+        String differentSecret = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5971";
+        Key differentKey = Keys.hmacShaKeyFor(differentSecret.getBytes());
+        String tokenWithDifferentSignature = Jwts.builder()
+                .setSubject(TEST_EMAIL)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
+                .signWith(differentKey, SignatureAlgorithm.HS256)
+                .compact();
+
+        // when
+        try {
+            jwtService.isTokenValid(tokenWithDifferentSignature, userDetails);
+            fail("Expected SignatureException");
+        } catch (SignatureException e) {
+            // expected
+        }
+    }
+
+    @Test
+    void shouldGenerateTokenWithRole() {
+        // when
+        String token = jwtService.generateToken(usuario);
+
+        // then
+        assertNotNull(token);
+        assertFalse(token.isEmpty());
+        var claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        assertEquals(TEST_EMAIL, claims.getSubject());
+        assertEquals("ADMINISTRADOR", claims.get("role"));
+    }
+
+    @Test
+    void shouldHandleNullUserDetails() {
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> jwtService.generateToken(null));
+    }
+
+    @Test
+    void shouldHandleNullToken() {
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> jwtService.extractUsername(null));
+        assertThrows(IllegalArgumentException.class, () -> jwtService.isTokenValid(null, userDetails));
+    }
+
+    @Test
+    void shouldHandleNullUserDetailsInValidation() {
+        // given
+        String token = jwtService.generateToken(usuario);
+
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> jwtService.isTokenValid(token, null));
     }
 } 

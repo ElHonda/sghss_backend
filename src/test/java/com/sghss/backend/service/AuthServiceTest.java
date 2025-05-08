@@ -15,7 +15,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,26 +42,43 @@ class AuthServiceTest {
     @Test
     void shouldLoadUserByUsername() {
         // given
-        when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.of(usuario));
 
         // when
-        UserDetails userDetails = authService.loadUserByUsername(usuario.getEmail());
+        UserDetails userDetails = authService.loadUserByUsername("test@example.com");
 
         // then
         assertNotNull(userDetails);
         assertEquals(usuario.getEmail(), userDetails.getUsername());
         assertEquals(usuario.getSenha(), userDetails.getPassword());
         assertTrue(userDetails.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_" + Role.ADMINISTRADOR.name())));
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRADOR")));
     }
 
     @Test
     void shouldThrowExceptionWhenUserNotFound() {
         // given
-        when(usuarioRepository.findByEmail(any())).thenReturn(Optional.empty());
+        when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
         // when & then
-        assertThrows(UsernameNotFoundException.class, () ->
-                authService.loadUserByUsername("nonexistent@example.com"));
+        assertThrows(UsernameNotFoundException.class, () -> 
+            authService.loadUserByUsername("nonexistent@example.com")
+        );
+    }
+
+    @Test
+    void shouldHandleNullEmail() {
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> 
+            authService.loadUserByUsername(null)
+        );
+    }
+
+    @Test
+    void shouldHandleEmptyEmail() {
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> 
+            authService.loadUserByUsername("")
+        );
     }
 } 

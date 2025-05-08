@@ -9,6 +9,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.security.Key;
 import java.util.Date;
@@ -23,16 +24,20 @@ public class JwtService {
     private final JwtConfig jwtConfig;
 
     public String generateToken(Usuario usuario) {
+        Assert.notNull(usuario, "Usuario não pode ser nulo");
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", usuario.getRole().name());
         return createToken(claims, usuario.getEmail());
     }
 
     public String extractUsername(String token) {
+        Assert.notNull(token, "Token não pode ser nulo");
         return extractClaim(token, Claims::getSubject);
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
+        Assert.notNull(token, "Token não pode ser nulo");
+        Assert.notNull(userDetails, "UserDetails não pode ser nulo");
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }

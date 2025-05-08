@@ -665,4 +665,415 @@ class UsuarioTest {
         
         assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
     }
+
+    @Test
+    void shouldHandleEqualsWithNullAndNonNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail("test@example.com");
+        usuario1.setSenha("senha");
+        usuario1.setRole(Role.ADMINISTRADOR);
+        
+        assertNotEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithNullAndNonNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail("test@example.com");
+        usuario1.setSenha("senha");
+        usuario1.setRole(Role.ADMINISTRADOR);
+        
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleEqualsWithDifferentFieldsAndNulls() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome(null);
+        usuario1.setEmail("test1@example.com");
+        usuario1.setSenha(null);
+        usuario1.setRole(Role.ADMINISTRADOR);
+        
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail(null);
+        usuario2.setSenha("senha");
+        usuario2.setRole(null);
+        
+        assertNotEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithDifferentFieldsAndNulls() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome(null);
+        usuario1.setEmail("test1@example.com");
+        usuario1.setSenha(null);
+        usuario1.setRole(Role.ADMINISTRADOR);
+        
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail(null);
+        usuario2.setSenha("senha");
+        usuario2.setRole(null);
+        
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleEqualsWithMixedNullAndNonNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail(null);
+        usuario1.setSenha("senha");
+        usuario1.setRole(null);
+        
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail("test@example.com");
+        usuario2.setSenha(null);
+        usuario2.setRole(Role.ADMINISTRADOR);
+        
+        assertNotEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithMixedNullAndNonNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail(null);
+        usuario1.setSenha("senha");
+        usuario1.setRole(null);
+        
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail("test@example.com");
+        usuario2.setSenha(null);
+        usuario2.setRole(Role.ADMINISTRADOR);
+        
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleEqualsWithAlternatingNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome(null);
+        usuario1.setEmail("test@example.com");
+        usuario1.setSenha(null);
+        usuario1.setRole(Role.ADMINISTRADOR);
+        
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail(null);
+        usuario2.setSenha("senha");
+        usuario2.setRole(null);
+        
+        assertNotEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithAlternatingNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome(null);
+        usuario1.setEmail("test@example.com");
+        usuario1.setSenha(null);
+        usuario1.setRole(Role.ADMINISTRADOR);
+        
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail(null);
+        usuario2.setSenha("senha");
+        usuario2.setRole(null);
+        
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleEqualsWithNullAndNonNullFieldsInDifferentOrder() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail(null);
+        usuario1.setSenha("senha");
+        usuario1.setRole(Role.ADMINISTRADOR);
+        
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail("test@example.com");
+        usuario2.setSenha(null);
+        usuario2.setRole(Role.ADMINISTRADOR);
+        
+        assertNotEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithNullAndNonNullFieldsInDifferentOrder() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail(null);
+        usuario1.setSenha("senha");
+        usuario1.setRole(Role.ADMINISTRADOR);
+        
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail("test@example.com");
+        usuario2.setSenha(null);
+        usuario2.setRole(Role.ADMINISTRADOR);
+        
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleEqualsWithAllFieldsNullExceptOne() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario2.setId(2L);
+        
+        assertNotEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithAllFieldsNullExceptOne() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario2.setId(2L);
+        
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleEqualsWithNullFieldsInDifferentPositions() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome(null);
+        usuario1.setEmail("test@example.com");
+        usuario1.setSenha(null);
+        usuario1.setRole(Role.ADMINISTRADOR);
+        
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail(null);
+        usuario2.setSenha("senha");
+        usuario2.setRole(null);
+        
+        assertNotEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithNullFieldsInDifferentPositions() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome(null);
+        usuario1.setEmail("test@example.com");
+        usuario1.setSenha(null);
+        usuario1.setRole(Role.ADMINISTRADOR);
+        
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail(null);
+        usuario2.setSenha("senha");
+        usuario2.setRole(null);
+        
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleEqualsWithNullFieldsInAllPositions() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(null);
+        usuario1.setNome(null);
+        usuario1.setEmail(null);
+        usuario1.setSenha(null);
+        usuario1.setRole(null);
+        
+        usuario2.setId(null);
+        usuario2.setNome(null);
+        usuario2.setEmail(null);
+        usuario2.setSenha(null);
+        usuario2.setRole(null);
+        
+        assertEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithNullFieldsInAllPositions() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(null);
+        usuario1.setNome(null);
+        usuario1.setEmail(null);
+        usuario1.setSenha(null);
+        usuario1.setRole(null);
+        
+        usuario2.setId(null);
+        usuario2.setNome(null);
+        usuario2.setEmail(null);
+        usuario2.setSenha(null);
+        usuario2.setRole(null);
+        
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleUserDetailsMethodsWithNullFields() {
+        Usuario usuario = new Usuario();
+        assertNull(usuario.getUsername());
+        assertNull(usuario.getPassword());
+        assertTrue(usuario.isAccountNonExpired());
+        assertTrue(usuario.isAccountNonLocked());
+        assertTrue(usuario.isCredentialsNonExpired());
+        assertTrue(usuario.isEnabled());
+    }
+
+    @Test
+    void shouldHandleEqualsWithNullAndSameId() {
+        Usuario usuario1 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome(null);
+        usuario1.setEmail(null);
+        usuario1.setSenha(null);
+        usuario1.setRole(null);
+
+        Usuario usuario2 = new Usuario();
+        usuario2.setId(1L);
+        usuario2.setNome(null);
+        usuario2.setEmail(null);
+        usuario2.setSenha(null);
+        usuario2.setRole(null);
+
+        assertEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithNullAndSameId() {
+        Usuario usuario1 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome(null);
+        usuario1.setEmail(null);
+        usuario1.setSenha(null);
+        usuario1.setRole(null);
+
+        Usuario usuario2 = new Usuario();
+        usuario2.setId(1L);
+        usuario2.setNome(null);
+        usuario2.setEmail(null);
+        usuario2.setSenha(null);
+        usuario2.setRole(null);
+
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleEqualsWithAllFieldsNullExceptRole() {
+        Usuario usuario1 = new Usuario();
+        usuario1.setRole(Role.ADMINISTRADOR);
+
+        Usuario usuario2 = new Usuario();
+        usuario2.setRole(Role.ADMINISTRADOR);
+
+        assertEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithAllFieldsNullExceptRole() {
+        Usuario usuario1 = new Usuario();
+        usuario1.setRole(Role.ADMINISTRADOR);
+
+        Usuario usuario2 = new Usuario();
+        usuario2.setRole(Role.ADMINISTRADOR);
+
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleEqualsWithAllFieldsNullExceptEmail() {
+        Usuario usuario1 = new Usuario();
+        usuario1.setEmail("test@example.com");
+
+        Usuario usuario2 = new Usuario();
+        usuario2.setEmail("test@example.com");
+
+        assertEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithAllFieldsNullExceptEmail() {
+        Usuario usuario1 = new Usuario();
+        usuario1.setEmail("test@example.com");
+
+        Usuario usuario2 = new Usuario();
+        usuario2.setEmail("test@example.com");
+
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleEqualsWithAllFieldsNullExceptNome() {
+        Usuario usuario1 = new Usuario();
+        usuario1.setNome("Test User");
+
+        Usuario usuario2 = new Usuario();
+        usuario2.setNome("Test User");
+
+        assertEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithAllFieldsNullExceptNome() {
+        Usuario usuario1 = new Usuario();
+        usuario1.setNome("Test User");
+
+        Usuario usuario2 = new Usuario();
+        usuario2.setNome("Test User");
+
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleEqualsWithAllFieldsNullExceptSenha() {
+        Usuario usuario1 = new Usuario();
+        usuario1.setSenha("password");
+
+        Usuario usuario2 = new Usuario();
+        usuario2.setSenha("password");
+
+        assertEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithAllFieldsNullExceptSenha() {
+        Usuario usuario1 = new Usuario();
+        usuario1.setSenha("password");
+
+        Usuario usuario2 = new Usuario();
+        usuario2.setSenha("password");
+
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
 } 

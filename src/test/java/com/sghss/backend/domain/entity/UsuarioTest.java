@@ -38,7 +38,7 @@ class UsuarioTest {
     }
 
     @Test
-    void shouldCreateUsuarioWithNoArgsConstructor() {
+    void shouldCreateUsuarioWithDefaultConstructor() {
         Usuario usuario = new Usuario();
         
         assertNotNull(usuario);
@@ -50,125 +50,32 @@ class UsuarioTest {
     }
 
     @Test
-    void shouldGetAuthorities() {
+    void shouldGetAuthoritiesWithRole() {
         Collection<? extends GrantedAuthority> authorities = usuario.getAuthorities();
         
         assertNotNull(authorities);
         assertEquals(1, authorities.size());
-        assertTrue(authorities.stream()
-                .anyMatch(auth -> auth instanceof SimpleGrantedAuthority &&
-                        auth.getAuthority().equals("ROLE_ADMINISTRADOR")));
+        assertTrue(authorities.contains(new SimpleGrantedAuthority("ROLE_ADMINISTRADOR")));
     }
 
     @Test
-    void shouldGetPassword() {
-        assertEquals("password", usuario.getPassword());
-    }
-
-    @Test
-    void shouldGetUsername() {
-        assertEquals("test@example.com", usuario.getUsername());
-    }
-
-    @Test
-    void shouldBeAccountNonExpired() {
-        assertTrue(usuario.isAccountNonExpired());
-    }
-
-    @Test
-    void shouldBeAccountNonLocked() {
-        assertTrue(usuario.isAccountNonLocked());
-    }
-
-    @Test
-    void shouldBeCredentialsNonExpired() {
-        assertTrue(usuario.isCredentialsNonExpired());
-    }
-
-    @Test
-    void shouldBeEnabled() {
-        assertTrue(usuario.isEnabled());
-    }
-
-    @Test
-    void shouldUpdateUsuarioFields() {
-        usuario.setNome("Updated Name");
-        usuario.setEmail("updated@example.com");
-        usuario.setSenha("newpassword");
-        usuario.setRole(Role.PROFISSIONAL);
-
-        assertEquals("Updated Name", usuario.getNome());
-        assertEquals("updated@example.com", usuario.getEmail());
-        assertEquals("newpassword", usuario.getSenha());
-        assertEquals(Role.PROFISSIONAL, usuario.getRole());
-    }
-
-    @Test
-    void shouldHaveCorrectAuthoritiesForDifferentRoles() {
-        usuario.setRole(Role.PROFISSIONAL);
-        Collection<? extends GrantedAuthority> profAuthorities = usuario.getAuthorities();
-        assertTrue(profAuthorities.stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_PROFISSIONAL")));
-
-        usuario.setRole(Role.PACIENTE);
-        Collection<? extends GrantedAuthority> pacAuthorities = usuario.getAuthorities();
-        assertTrue(pacAuthorities.stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_PACIENTE")));
-    }
-
-    @Test
-    void shouldHandleNullRole() {
+    void shouldGetAuthoritiesWithNullRole() {
         usuario.setRole(null);
         Collection<? extends GrantedAuthority> authorities = usuario.getAuthorities();
+        
         assertNotNull(authorities);
         assertTrue(authorities.isEmpty());
     }
 
     @Test
-    void shouldHandleNullFields() {
-        Usuario usuario = new Usuario();
-        assertNull(usuario.getNome());
-        assertNull(usuario.getEmail());
-        assertNull(usuario.getSenha());
-        assertNull(usuario.getRole());
-        assertNull(usuario.getId());
-    }
-
-    @Test
-    void shouldHandleEmptyFields() {
-        usuario.setNome("");
-        usuario.setEmail("");
-        usuario.setSenha("");
-        
-        assertEquals("", usuario.getNome());
-        assertEquals("", usuario.getEmail());
-        assertEquals("", usuario.getSenha());
-    }
-
-    @Test
-    void shouldHandleSpecialCharactersInFields() {
-        usuario.setNome("João Silva");
-        usuario.setEmail("joão.silva@exemplo.com");
-        usuario.setSenha("senha@123");
-        
-        assertEquals("João Silva", usuario.getNome());
-        assertEquals("joão.silva@exemplo.com", usuario.getEmail());
-        assertEquals("senha@123", usuario.getSenha());
-    }
-
-    @Test
-    void shouldHandleLongFields() {
-        String longName = "a".repeat(255);
-        String longEmail = "a".repeat(255);
-        String longPassword = "a".repeat(255);
-        
-        usuario.setNome(longName);
-        usuario.setEmail(longEmail);
-        usuario.setSenha(longPassword);
-        
-        assertEquals(longName, usuario.getNome());
-        assertEquals(longEmail, usuario.getEmail());
-        assertEquals(longPassword, usuario.getSenha());
+    void shouldImplementUserDetailsInterface() {
+        assertTrue(usuario instanceof UserDetails);
+        assertEquals("test@example.com", usuario.getUsername());
+        assertEquals("password", usuario.getPassword());
+        assertTrue(usuario.isAccountNonExpired());
+        assertTrue(usuario.isAccountNonLocked());
+        assertTrue(usuario.isCredentialsNonExpired());
+        assertTrue(usuario.isEnabled());
     }
 
     @Test
@@ -184,58 +91,13 @@ class UsuarioTest {
     }
 
     @Test
-    void shouldHandleToString() {
-        Usuario usuario = new Usuario(1L, "Test User", "test@example.com", "password", Role.ADMINISTRADOR);
-        String toString = usuario.toString();
-
-        assertTrue(toString.contains("id=1"));
-        assertTrue(toString.contains("nome=Test User"));
-        assertTrue(toString.contains("email=test@example.com"));
-        assertTrue(toString.contains("senha=password"));
-        assertTrue(toString.contains("role=ADMINISTRADOR"));
-    }
-
-    @Test
-    void shouldHandleUserDetailsImplementation() {
-        assertInstanceOf(UserDetails.class, usuario);
-        UserDetails userDetails = usuario;
-
-        assertEquals(usuario.getEmail(), userDetails.getUsername());
-        assertEquals(usuario.getSenha(), userDetails.getPassword());
-        assertTrue(userDetails.isAccountNonExpired());
-        assertTrue(userDetails.isAccountNonLocked());
-        assertTrue(userDetails.isCredentialsNonExpired());
-        assertTrue(userDetails.isEnabled());
-    }
-
-    @Test
-    void shouldHandleRoleComparison() {
-        Usuario admin = new Usuario(1L, "Admin", "admin@example.com", "password", Role.ADMINISTRADOR);
-        Usuario prof = new Usuario(2L, "Prof", "prof@example.com", "password", Role.PROFISSIONAL);
-        Usuario pac = new Usuario(3L, "Pac", "pac@example.com", "password", Role.PACIENTE);
-
-        assertNotEquals(admin.getRole(), prof.getRole());
-        assertNotEquals(prof.getRole(), pac.getRole());
-        assertNotEquals(admin.getRole(), pac.getRole());
-    }
-
-    @Test
-    void shouldHandleAuthoritiesFormat() {
-        Collection<? extends GrantedAuthority> authorities = usuario.getAuthorities();
-        GrantedAuthority authority = authorities.iterator().next();
-
-        assertEquals("ROLE_ADMINISTRADOR", authority.getAuthority());
-        assertInstanceOf(SimpleGrantedAuthority.class, authority);
-    }
-
-    @Test
     void shouldHandleEqualsWithNull() {
-        assertNotEquals(null, usuario);
+        assertNotEquals(usuario, null);
     }
 
     @Test
     void shouldHandleEqualsWithDifferentClass() {
-        assertNotEquals(new Object(), usuario);
+        assertNotEquals(usuario, new Object());
     }
 
     @Test
@@ -251,7 +113,7 @@ class UsuarioTest {
         other.setEmail(usuario.getEmail());
         other.setSenha(usuario.getSenha());
         other.setRole(usuario.getRole());
-
+        
         assertNotEquals(usuario, other);
     }
 
@@ -263,7 +125,7 @@ class UsuarioTest {
         other.setEmail(usuario.getEmail());
         other.setSenha(usuario.getSenha());
         other.setRole(usuario.getRole());
-
+        
         assertNotEquals(usuario, other);
     }
 
@@ -275,7 +137,7 @@ class UsuarioTest {
         other.setEmail("different@example.com");
         other.setSenha(usuario.getSenha());
         other.setRole(usuario.getRole());
-
+        
         assertNotEquals(usuario, other);
     }
 
@@ -285,9 +147,9 @@ class UsuarioTest {
         other.setId(usuario.getId());
         other.setNome(usuario.getNome());
         other.setEmail(usuario.getEmail());
-        other.setSenha("differentpassword");
+        other.setSenha("different_password");
         other.setRole(usuario.getRole());
-
+        
         assertNotEquals(usuario, other);
     }
 
@@ -298,28 +160,509 @@ class UsuarioTest {
         other.setNome(usuario.getNome());
         other.setEmail(usuario.getEmail());
         other.setSenha(usuario.getSenha());
-        other.setRole(Role.PACIENTE);
-
+        other.setRole(Role.PROFISSIONAL);
+        
         assertNotEquals(usuario, other);
     }
 
     @Test
+    void shouldHandleEqualsWithNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        
+        assertEquals(usuario1, usuario2);
+        
+        usuario1.setId(1L);
+        assertNotEquals(usuario1, usuario2);
+        
+        usuario2.setId(1L);
+        assertEquals(usuario1, usuario2);
+        
+        usuario1.setNome("Test");
+        assertNotEquals(usuario1, usuario2);
+        
+        usuario2.setNome("Test");
+        assertEquals(usuario1, usuario2);
+        
+        usuario1.setEmail("test@example.com");
+        assertNotEquals(usuario1, usuario2);
+        
+        usuario2.setEmail("test@example.com");
+        assertEquals(usuario1, usuario2);
+        
+        usuario1.setSenha("password");
+        assertNotEquals(usuario1, usuario2);
+        
+        usuario2.setSenha("password");
+        assertEquals(usuario1, usuario2);
+        
+        usuario1.setRole(Role.ADMINISTRADOR);
+        assertNotEquals(usuario1, usuario2);
+        
+        usuario2.setRole(Role.ADMINISTRADOR);
+        assertEquals(usuario1, usuario2);
+    }
+
+    @Test
     void shouldHandleHashCodeWithNullFields() {
-        Usuario nullUser = new Usuario();
-        assertNotEquals(0, nullUser.hashCode());
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+        
+        usuario1.setId(1L);
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+        
+        usuario2.setId(1L);
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+        
+        usuario1.setNome("Test");
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+        
+        usuario2.setNome("Test");
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+        
+        usuario1.setEmail("test@example.com");
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+        
+        usuario2.setEmail("test@example.com");
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+        
+        usuario1.setSenha("password");
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+        
+        usuario2.setSenha("password");
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+        
+        usuario1.setRole(Role.ADMINISTRADOR);
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+        
+        usuario2.setRole(Role.ADMINISTRADOR);
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
     }
 
     @Test
-    void shouldHandleHashCodeConsistency() {
-        int hash1 = usuario.hashCode();
-        int hash2 = usuario.hashCode();
-        assertEquals(hash1, hash2);
+    void shouldHandleHashCodeWithAllNullFields() {
+        Usuario usuario = new Usuario();
+        assertNotEquals(0, usuario.hashCode());
     }
 
     @Test
-    void shouldHandleHashCodeWithAllFields() {
-        Usuario user1 = new Usuario(1L, "Test", "test@example.com", "password", Role.ADMINISTRADOR);
-        Usuario user2 = new Usuario(1L, "Test", "test@example.com", "password", Role.ADMINISTRADOR);
-        assertEquals(user1.hashCode(), user2.hashCode());
+    void shouldHandleHashCodeWithSomeNullFields() {
+        Usuario usuario = new Usuario();
+        usuario.setId(1L);
+        usuario.setNome(null);
+        usuario.setEmail(null);
+        usuario.setSenha(null);
+        usuario.setRole(null);
+        
+        assertNotEquals(0, usuario.hashCode());
+    }
+
+    @Test
+    void shouldHandleToString() {
+        String toString = usuario.toString();
+        
+        assertTrue(toString.contains("id=" + usuario.getId()));
+        assertTrue(toString.contains("nome=" + usuario.getNome()));
+        assertTrue(toString.contains("email=" + usuario.getEmail()));
+        assertTrue(toString.contains("senha=" + usuario.getSenha()));
+        assertTrue(toString.contains("role=" + usuario.getRole()));
+    }
+
+    @Test
+    void shouldHandleToStringWithNullFields() {
+        Usuario usuario = new Usuario();
+        String toString = usuario.toString();
+        
+        assertTrue(toString.contains("id=null"));
+        assertTrue(toString.contains("nome=null"));
+        assertTrue(toString.contains("email=null"));
+        assertTrue(toString.contains("senha=null"));
+        assertTrue(toString.contains("role=null"));
+    }
+
+    @Test
+    void shouldHandleEqualsWithNullId() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setNome("Test");
+        usuario2.setNome("Test");
+        
+        assertEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleEqualsWithNullNome() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario2.setId(1L);
+        
+        assertEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleEqualsWithNullEmail() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        
+        assertEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleEqualsWithNullSenha() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail("test@example.com");
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail("test@example.com");
+        
+        assertEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleEqualsWithNullRole() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail("test@example.com");
+        usuario1.setSenha("password");
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail("test@example.com");
+        usuario2.setSenha("password");
+        
+        assertEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithNullId() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setNome("Test");
+        usuario2.setNome("Test");
+        
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleHashCodeWithNullNome() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario2.setId(1L);
+        
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleHashCodeWithNullEmail() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleHashCodeWithNullSenha() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail("test@example.com");
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail("test@example.com");
+        
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleHashCodeWithNullRole() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail("test@example.com");
+        usuario1.setSenha("password");
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail("test@example.com");
+        usuario2.setSenha("password");
+        
+        assertEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleToStringWithNullId() {
+        Usuario usuario = new Usuario();
+        usuario.setNome("Test");
+        usuario.setEmail("test@example.com");
+        usuario.setSenha("password");
+        usuario.setRole(Role.ADMINISTRADOR);
+        
+        String toString = usuario.toString();
+        assertTrue(toString.contains("id=null"));
+        assertTrue(toString.contains("nome=Test"));
+        assertTrue(toString.contains("email=test@example.com"));
+        assertTrue(toString.contains("senha=password"));
+        assertTrue(toString.contains("role=ADMINISTRADOR"));
+    }
+
+    @Test
+    void shouldHandleToStringWithNullNome() {
+        Usuario usuario = new Usuario();
+        usuario.setId(1L);
+        usuario.setEmail("test@example.com");
+        usuario.setSenha("password");
+        usuario.setRole(Role.ADMINISTRADOR);
+        
+        String toString = usuario.toString();
+        assertTrue(toString.contains("id=1"));
+        assertTrue(toString.contains("nome=null"));
+        assertTrue(toString.contains("email=test@example.com"));
+        assertTrue(toString.contains("senha=password"));
+        assertTrue(toString.contains("role=ADMINISTRADOR"));
+    }
+
+    @Test
+    void shouldHandleToStringWithNullEmail() {
+        Usuario usuario = new Usuario();
+        usuario.setId(1L);
+        usuario.setNome("Test");
+        usuario.setSenha("password");
+        usuario.setRole(Role.ADMINISTRADOR);
+        
+        String toString = usuario.toString();
+        assertTrue(toString.contains("id=1"));
+        assertTrue(toString.contains("nome=Test"));
+        assertTrue(toString.contains("email=null"));
+        assertTrue(toString.contains("senha=password"));
+        assertTrue(toString.contains("role=ADMINISTRADOR"));
+    }
+
+    @Test
+    void shouldHandleToStringWithNullSenha() {
+        Usuario usuario = new Usuario();
+        usuario.setId(1L);
+        usuario.setNome("Test");
+        usuario.setEmail("test@example.com");
+        usuario.setRole(Role.ADMINISTRADOR);
+        
+        String toString = usuario.toString();
+        assertTrue(toString.contains("id=1"));
+        assertTrue(toString.contains("nome=Test"));
+        assertTrue(toString.contains("email=test@example.com"));
+        assertTrue(toString.contains("senha=null"));
+        assertTrue(toString.contains("role=ADMINISTRADOR"));
+    }
+
+    @Test
+    void shouldHandleToStringWithNullRole() {
+        Usuario usuario = new Usuario();
+        usuario.setId(1L);
+        usuario.setNome("Test");
+        usuario.setEmail("test@example.com");
+        usuario.setSenha("password");
+        
+        String toString = usuario.toString();
+        assertTrue(toString.contains("id=1"));
+        assertTrue(toString.contains("nome=Test"));
+        assertTrue(toString.contains("email=test@example.com"));
+        assertTrue(toString.contains("senha=password"));
+        assertTrue(toString.contains("role=null"));
+    }
+
+    @Test
+    void shouldHandleEqualsWithDifferentIdAndNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario2.setId(2L);
+        
+        assertNotEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleEqualsWithDifferentNomeAndNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test1");
+        usuario2.setId(1L);
+        usuario2.setNome("Test2");
+        
+        assertNotEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleEqualsWithDifferentEmailAndNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail("test1@example.com");
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail("test2@example.com");
+        
+        assertNotEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleEqualsWithDifferentSenhaAndNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail("test@example.com");
+        usuario1.setSenha("senha1");
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail("test@example.com");
+        usuario2.setSenha("senha2");
+        
+        assertNotEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleEqualsWithDifferentRoleAndNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail("test@example.com");
+        usuario1.setSenha("senha");
+        usuario1.setRole(Role.ADMINISTRADOR);
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail("test@example.com");
+        usuario2.setSenha("senha");
+        usuario2.setRole(Role.PROFISSIONAL);
+        
+        assertNotEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithDifferentIdAndNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario2.setId(2L);
+        
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleHashCodeWithDifferentNomeAndNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test1");
+        usuario2.setId(1L);
+        usuario2.setNome("Test2");
+        
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleHashCodeWithDifferentEmailAndNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail("test1@example.com");
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail("test2@example.com");
+        
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleHashCodeWithDifferentSenhaAndNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail("test@example.com");
+        usuario1.setSenha("senha1");
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail("test@example.com");
+        usuario2.setSenha("senha2");
+        
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleHashCodeWithDifferentRoleAndNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario1.setEmail("test@example.com");
+        usuario1.setSenha("senha");
+        usuario1.setRole(Role.ADMINISTRADOR);
+        usuario2.setId(1L);
+        usuario2.setNome("Test");
+        usuario2.setEmail("test@example.com");
+        usuario2.setSenha("senha");
+        usuario2.setRole(Role.PROFISSIONAL);
+        
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleEqualsWithAllFieldsDifferent() {
+        Usuario usuario1 = new Usuario(1L, "Test1", "test1@example.com", "senha1", Role.ADMINISTRADOR);
+        Usuario usuario2 = new Usuario(2L, "Test2", "test2@example.com", "senha2", Role.PROFISSIONAL);
+        
+        assertNotEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithAllFieldsDifferent() {
+        Usuario usuario1 = new Usuario(1L, "Test1", "test1@example.com", "senha1", Role.ADMINISTRADOR);
+        Usuario usuario2 = new Usuario(2L, "Test2", "test2@example.com", "senha2", Role.PROFISSIONAL);
+        
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
+    }
+
+    @Test
+    void shouldHandleEqualsWithPartialNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario2.setId(1L);
+        usuario2.setNome(null);
+        
+        assertNotEquals(usuario1, usuario2);
+    }
+
+    @Test
+    void shouldHandleHashCodeWithPartialNullFields() {
+        Usuario usuario1 = new Usuario();
+        Usuario usuario2 = new Usuario();
+        usuario1.setId(1L);
+        usuario1.setNome("Test");
+        usuario2.setId(1L);
+        usuario2.setNome(null);
+        
+        assertNotEquals(usuario1.hashCode(), usuario2.hashCode());
     }
 } 

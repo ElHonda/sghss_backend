@@ -20,6 +20,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -134,13 +136,8 @@ class JwtServiceTest {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        // when
-        try {
-            jwtService.isTokenValid(expiredToken, userDetails);
-            fail("Expected ExpiredJwtException");
-        } catch (ExpiredJwtException e) {
-            // expected
-        }
+        // when & then
+        assertThrows(ExpiredJwtException.class, () -> jwtService.isTokenValid(expiredToken, userDetails));
     }
 
     @Test
@@ -155,13 +152,17 @@ class JwtServiceTest {
                 .signWith(differentKey, SignatureAlgorithm.HS256)
                 .compact();
 
-        // when
-        try {
-            jwtService.isTokenValid(tokenWithDifferentSignature, userDetails);
-            fail("Expected SignatureException");
-        } catch (SignatureException e) {
-            // expected
-        }
+        // when & then
+        assertThrows(SignatureException.class, () -> jwtService.isTokenValid(tokenWithDifferentSignature, userDetails));
+    }
+
+    @Test
+    void shouldNotValidateTokenWithMalformedJwt() {
+        // given
+        String malformedToken = "not.a.valid.jwt.token";
+
+        // when & then
+        assertThrows(Exception.class, () -> jwtService.isTokenValid(malformedToken, userDetails));
     }
 
     @Test
@@ -237,5 +238,55 @@ class JwtServiceTest {
 
         // then
         assertFalse(isValid);
+    }
+
+    @Test
+    void shouldNotValidateTokenWhenTokenIsExpired() {
+        // given
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", usuario.getRole().name());
+        String expiredToken = Jwts.builder()
+                .setClaims(claims)
+                .setSubject(TEST_EMAIL)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+
+        // Aguarda o token expirar
+        try {
+            Thread.sleep(1100);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // when & then
+        assertThrows(ExpiredJwtException.class, () -> jwtService.isTokenValid(expiredToken, userDetails));
+    }
+
+    @Test
+    void shouldReturnFalseWhenTokenIsExpired() {
+        // given
+        JwtService spyService = spy(jwtService);
+        String token = spyService.generateToken(usuario);
+        doReturn(true).when(spyService).isTokenExpired(token);
+
+        // when
+        boolean isValid = spyService.isTokenValid(token, userDetails);
+
+        // then
+        assertFalse(isValid);
+    }
+
+    @Test
+    void shouldValidateTokenWhenUsernameMatchesAndTokenIsNotExpired() {
+        // given
+        String token = jwtService.generateToken(usuario);
+
+        // when
+        boolean isValid = jwtService.isTokenValid(token, userDetails);
+
+        // then
+        assertTrue(isValid);
     }
 } 

@@ -38,31 +38,61 @@ class ApiResponseTest {
 
     @Test
     void shouldCreateSuccessResponse() {
-        // given
-        String data = "Success data";
-        String message = "Operation successful";
-
         // when
-        ApiResponse<String> response = ApiResponse.success(data, message);
+        ApiResponse<String> response = ApiResponse.success("data");
 
         // then
+        assertNotNull(response);
         assertEquals(200, response.getStatus());
-        assertEquals(message, response.getMessage());
-        assertEquals(data, response.getData());
+        assertEquals("data", response.getData());
+        assertEquals("Operação realizada com sucesso", response.getMessage());
+    }
+
+    @Test
+    void shouldCreateSuccessResponseWithCustomMessage() {
+        // when
+        ApiResponse<String> response = ApiResponse.success("data", "Custom message");
+
+        // then
+        assertNotNull(response);
+        assertEquals(200, response.getStatus());
+        assertEquals("data", response.getData());
+        assertEquals("Custom message", response.getMessage());
     }
 
     @Test
     void shouldCreateErrorResponse() {
-        // given
-        String message = "Error occurred";
-        int status = 400;
-
         // when
-        ApiResponse<Void> response = ApiResponse.error(status, message);
+        ApiResponse<String> response = ApiResponse.error(400, "Error message");
 
         // then
-        assertEquals(status, response.getStatus());
-        assertEquals(message, response.getMessage());
+        assertNotNull(response);
+        assertEquals(400, response.getStatus());
         assertNull(response.getData());
+        assertEquals("Error message", response.getMessage());
+    }
+
+    @Test
+    void shouldCreateResponseWithAllArgsConstructor() {
+        // when
+        ApiResponse<String> response = new ApiResponse<>(200, "data", "message");
+
+        // then
+        assertNotNull(response);
+        assertEquals(200, response.getStatus());
+        assertEquals("data", response.getData());
+        assertEquals("message", response.getMessage());
+    }
+
+    @Test
+    void shouldCreateResponseWithNoArgsConstructor() {
+        // when
+        ApiResponse<String> response = new ApiResponse<>();
+
+        // then
+        assertNotNull(response);
+        assertEquals(0, response.getStatus());
+        assertNull(response.getData());
+        assertNull(response.getMessage());
     }
 } 

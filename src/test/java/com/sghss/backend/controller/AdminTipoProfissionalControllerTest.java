@@ -46,7 +46,7 @@ class AdminTipoProfissionalControllerTest {
     void deveCriarTipoProfissional() {
         when(tipoProfissionalService.criar(any(TipoProfissionalRequestDTO.class))).thenReturn(responseDTO);
         ResponseEntity<ApiResponse<TipoProfissionalResponseDTO>> response = controller.criar(requestDTO);
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertEquals("Fisioterapeuta", response.getBody().getData().getNome());
     }
 
@@ -54,7 +54,7 @@ class AdminTipoProfissionalControllerTest {
     void deveListarTodosTiposProfissional() {
         when(tipoProfissionalService.listarTodos()).thenReturn(Arrays.asList(responseDTO));
         ResponseEntity<ApiResponse<List<TipoProfissionalResponseDTO>>> response = controller.listarTodos();
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertEquals(1, response.getBody().getData().size());
     }
 
@@ -62,7 +62,7 @@ class AdminTipoProfissionalControllerTest {
     void deveBuscarPorIdExistente() {
         when(tipoProfissionalService.buscarPorId(1L)).thenReturn(Optional.of(responseDTO));
         ResponseEntity<ApiResponse<TipoProfissionalResponseDTO>> response = controller.buscarPorId(1L);
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertEquals("Fisioterapeuta", response.getBody().getData().getNome());
     }
 
@@ -70,7 +70,7 @@ class AdminTipoProfissionalControllerTest {
     void deveRetornar404AoBuscarPorIdInexistente() {
         when(tipoProfissionalService.buscarPorId(anyLong())).thenReturn(Optional.empty());
         ResponseEntity<ApiResponse<TipoProfissionalResponseDTO>> response = controller.buscarPorId(2L);
-        assertEquals(404, response.getStatusCodeValue());
+        assertEquals(404, response.getStatusCode().value());
         assertEquals(404, response.getBody().getStatus());
     }
 
@@ -78,7 +78,7 @@ class AdminTipoProfissionalControllerTest {
     void deveAtualizarTipoProfissionalExistente() {
         when(tipoProfissionalService.atualizar(eq(1L), any(TipoProfissionalRequestDTO.class))).thenReturn(Optional.of(responseDTO));
         ResponseEntity<ApiResponse<TipoProfissionalResponseDTO>> response = controller.atualizar(1L, requestDTO);
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertEquals("Fisioterapeuta", response.getBody().getData().getNome());
     }
 
@@ -86,7 +86,7 @@ class AdminTipoProfissionalControllerTest {
     void deveRetornar404AoAtualizarTipoProfissionalInexistente() {
         when(tipoProfissionalService.atualizar(eq(2L), any(TipoProfissionalRequestDTO.class))).thenReturn(Optional.empty());
         ResponseEntity<ApiResponse<TipoProfissionalResponseDTO>> response = controller.atualizar(2L, requestDTO);
-        assertEquals(404, response.getStatusCodeValue());
+        assertEquals(404, response.getStatusCode().value());
         assertEquals(404, response.getBody().getStatus());
     }
 
@@ -94,7 +94,7 @@ class AdminTipoProfissionalControllerTest {
     void deveDeletarTipoProfissionalExistente() {
         when(tipoProfissionalService.deletar(1L)).thenReturn(true);
         ResponseEntity<ApiResponse<Void>> response = controller.deletar(1L);
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertTrue(response.getBody().getMessage().contains("deletado"));
     }
 
@@ -102,7 +102,7 @@ class AdminTipoProfissionalControllerTest {
     void deveRetornar404AoDeletarTipoProfissionalInexistente() {
         when(tipoProfissionalService.deletar(2L)).thenReturn(false);
         ResponseEntity<ApiResponse<Void>> response = controller.deletar(2L);
-        assertEquals(404, response.getStatusCodeValue());
+        assertEquals(404, response.getStatusCode().value());
         assertEquals(404, response.getBody().getStatus());
     }
 } 

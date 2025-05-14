@@ -4,6 +4,7 @@ import com.sghss.backend.domain.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,7 +19,8 @@ import java.util.List;
 @Table(name = "usuarios")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Usuario implements UserDetails {
+@EqualsAndHashCode(callSuper = true)
+public class Usuario extends Auditable implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

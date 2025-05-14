@@ -19,7 +19,7 @@ import java.util.List;
 @Table(name = "usuarios")
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class Usuario extends Auditable implements UserDetails {
 
     @Id

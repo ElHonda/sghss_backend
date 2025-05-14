@@ -62,9 +62,9 @@ class SecurityConfigTest {
     void shouldConfigureCors() {
         // given
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRequestURI("/api/test");
+        request.setRequestURI("/test");
         request.setContextPath("");
-        request.setServletPath("/api/test");
+        request.setServletPath("/test");
 
         // when
         CorsConfigurationSource corsConfig = securityConfig.corsConfigurationSource();

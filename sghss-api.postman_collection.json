@@ -44,7 +44,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"admin@sghss.com\",\n    \"senha\": \"admin123\"\n}"
+							"raw": "{\n    \"email\": \"admin@sghss.com\",\n    \"password\": \"admin123\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/auth/login",
@@ -136,7 +136,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"usuario@email.com\",\n    \"senha\": \"senha123\"\n}"
+							"raw": "{\n    \"email\": \"usuario@email.com\",\n    \"password\": \"senha123\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/auth/login",
@@ -230,6 +230,151 @@
 						},
 						"description": "Endpoint de teste para administradores"
 					}
+				},
+				{
+					"name": "Tipos de Profissional",
+					"item": [
+						{
+							"name": "Criar Tipo de Profissional",
+							"request": {
+								"method": "POST",
+								"header": [
+									{"key": "Content-Type", "value": "application/json"},
+									{"key": "Authorization", "value": "Bearer {{token}}"}
+								],
+								"body": {"mode": "raw", "raw": "{\n    \"nome\": \"Fisioterapeuta\"\n}"},
+								"url": {"raw": "{{base_url}}/admin/tipos-profissional", "host": ["{{base_url}}"], "path": ["admin", "tipos-profissional"]}
+							},
+							"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+								"var jsonData = pm.response.json();",
+								"pm.test('Status 200', function() { pm.expect(jsonData.status).to.equal(200); });",
+								"pm.test('Tem id', function() { pm.expect(jsonData.data.id).to.exist; });"
+							]}}]
+						},
+						{
+							"name": "Listar Tipos de Profissional",
+							"request": {
+								"method": "GET",
+								"header": [
+									{"key": "Authorization", "value": "Bearer {{token}}"}
+								],
+								"url": {"raw": "{{base_url}}/admin/tipos-profissional", "host": ["{{base_url}}"], "path": ["admin", "tipos-profissional"]}
+							},
+							"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+								"var jsonData = pm.response.json();",
+								"pm.test('Status 200', function() { pm.expect(jsonData.status).to.equal(200); });",
+								"pm.test('É array', function() { pm.expect(Array.isArray(jsonData.data)).to.be.true; });"
+							]}}]
+						},
+						{
+							"name": "Buscar Tipo de Profissional por ID",
+							"request": {
+								"method": "GET",
+								"header": [
+									{"key": "Authorization", "value": "Bearer {{token}}"}
+								],
+								"url": {"raw": "{{base_url}}/admin/tipos-profissional/1", "host": ["{{base_url}}"], "path": ["admin", "tipos-profissional", "1"]}
+							},
+							"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+								"var jsonData = pm.response.json();",
+								"pm.test('Status 200 ou 404', function() { pm.expect([200,404]).to.include(jsonData.status); });"
+							]}}]
+						},
+						{
+							"name": "Atualizar Tipo de Profissional",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{"key": "Content-Type", "value": "application/json"},
+									{"key": "Authorization", "value": "Bearer {{token}}"}
+								],
+								"body": {"mode": "raw", "raw": "{\n    \"nome\": \"Fonoaudiólogo\"\n}"},
+								"url": {"raw": "{{base_url}}/admin/tipos-profissional/1", "host": ["{{base_url}}"], "path": ["admin", "tipos-profissional", "1"]}
+							},
+							"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+								"var jsonData = pm.response.json();",
+								"pm.test('Status 200 ou 404', function() { pm.expect([200,404]).to.include(jsonData.status); });"
+							]}}]
+						},
+						{
+							"name": "Deletar Tipo de Profissional",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{"key": "Authorization", "value": "Bearer {{token}}"}
+								],
+								"url": {"raw": "{{base_url}}/admin/tipos-profissional/1", "host": ["{{base_url}}"], "path": ["admin", "tipos-profissional", "1"]}
+							},
+							"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+								"var jsonData = pm.response.json();",
+								"pm.test('Status 200 ou 404', function() { pm.expect([200,404]).to.include(jsonData.status); });"
+							]}}]
+						}
+					]
+				},
+				{
+					"name": "Profissionais",
+					"item": [
+						{
+							"name": "Listar Profissionais",
+							"request": {
+								"method": "GET",
+								"header": [
+									{"key": "Authorization", "value": "Bearer {{token}}"}
+								],
+								"url": {"raw": "{{base_url}}/admin/profissionais", "host": ["{{base_url}}"], "path": ["admin", "profissionais"]}
+							},
+							"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+								"var jsonData = pm.response.json();",
+								"pm.test('Status 200', function() { pm.expect(jsonData.status).to.equal(200); });",
+								"pm.test('É array', function() { pm.expect(Array.isArray(jsonData.data)).to.be.true; });"
+							]}}]
+						},
+						{
+							"name": "Buscar Profissional por ID",
+							"request": {
+								"method": "GET",
+								"header": [
+									{"key": "Authorization", "value": "Bearer {{token}}"}
+								],
+								"url": {"raw": "{{base_url}}/admin/profissionais/1", "host": ["{{base_url}}"], "path": ["admin", "profissionais", "1"]}
+							},
+							"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+								"var jsonData = pm.response.json();",
+								"pm.test('Status 200 ou 404', function() { pm.expect([200,404]).to.include(jsonData.status); });"
+							]}}]
+						},
+						{
+							"name": "Atualizar Profissional",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{"key": "Content-Type", "value": "application/json"},
+									{"key": "Authorization", "value": "Bearer {{token}}"}
+								],
+								"body": {"mode": "raw", "raw": "{\n    \"registroProfissional\": \"654321\"\n}"},
+								"url": {"raw": "{{base_url}}/admin/profissionais/1", "host": ["{{base_url}}"], "path": ["admin", "profissionais", "1"]}
+							},
+							"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+								"var jsonData = pm.response.json();",
+								"pm.test('Status 200 ou 404', function() { pm.expect([200,404]).to.include(jsonData.status); });"
+							]}}]
+						},
+						{
+							"name": "Deletar Profissional",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{"key": "Authorization", "value": "Bearer {{token}}"}
+								],
+								"url": {"raw": "{{base_url}}/admin/profissionais/1", "host": ["{{base_url}}"], "path": ["admin", "profissionais", "1"]}
+							},
+							"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+								"var jsonData = pm.response.json();",
+								"pm.test('Status 200 ou 404', function() { pm.expect([200,404]).to.include(jsonData.status); });"
+							]}}]
+						}
+					]
 				}
 			]
 		},
@@ -328,462 +473,150 @@
 			]
 		},
 		{
-			"name": "Test Flow",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							"// Verifica se a resposta está no formato esperado",
-							"var jsonData = pm.response.json();",
-							"pm.test('Resposta tem status', function() {",
-							"    pm.expect(jsonData).to.have.property('status');",
-							"});",
-							"pm.test('Resposta tem data', function() {",
-							"    pm.expect(jsonData).to.have.property('data');",
-							"});",
-							"pm.test('Resposta tem message', function() {",
-							"    pm.expect(jsonData).to.have.property('message');",
-							"});"
-						]
-					}
-				}
-			],
+			"name": "Fluxo Profissional",
 			"item": [
 				{
-					"name": "1. Ping",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"// Limpa o token apenas no início do fluxo de teste",
-									"pm.collectionVariables.unset('token');",
-									"console.log('Token limpo para início dos testes');"
-								]
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"pm.test('Resposta tem status 200', function() {",
-									"    pm.expect(jsonData.status).to.equal(200);",
-									"});",
-									"pm.test('Resposta tem data', function() {",
-									"    pm.expect(jsonData.data).to.equal('pong');",
-									"});",
-									"pm.test('Resposta tem mensagem de sucesso', function() {",
-									"    pm.expect(jsonData.message).to.include('sucesso');",
-									"});"
-								]
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/public/ping",
-							"host": ["{{base_url}}"],
-							"path": ["public", "ping"]
-						}
-					}
-				},
-				{
-					"name": "2. Login Admin",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData.data && jsonData.data.token) {",
-									"    pm.collectionVariables.set('token', jsonData.data.token);",
-									"    console.log('Token salvo com sucesso');",
-									"    pm.test('Token foi salvo', function() {",
-									"        pm.expect(pm.collectionVariables.get('token')).to.exist;",
-									"});",
-									"} else {",
-									"    console.log('Token não encontrado na resposta');",
-									"    pm.test('Token não encontrado', function() {",
-									"        pm.expect.fail('Token não encontrado na resposta');",
-									"    });",
-									"}"
-								]
-							}
-						}
-					],
+					"name": "Login Admin",
 					"request": {
 						"method": "POST",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
+							{"key": "Content-Type", "value": "application/json"}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"email\": \"admin@sghss.com\",\n    \"senha\": \"admin123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/login",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "login"]
-						}
-					}
+						"body": {"mode": "raw", "raw": "{\n    \"email\": \"admin@sghss.com\",\n    \"password\": \"admin123\"\n}"},
+						"url": {"raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"]}
+					},
+					"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+						"var jsonData = pm.response.json();",
+						"if (jsonData.data && jsonData.data.token) { pm.collectionVariables.set('token', jsonData.data.token); }"
+					]}}]
 				},
 				{
-					"name": "3. Teste Admin",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"pm.test('Token está presente', function() {",
-									"    pm.expect(pm.collectionVariables.get('token')).to.exist;",
-									"});",
-									"",
-									"var jsonData = pm.response.json();",
-									"pm.test('Resposta tem status 200', function() {",
-									"    pm.expect(jsonData.status).to.equal(200);",
-									"});",
-									"pm.test('Resposta tem data', function() {",
-									"    pm.expect(jsonData.data).to.include('administrador');",
-									"});",
-									"pm.test('Resposta tem mensagem de sucesso', function() {",
-									"    pm.expect(jsonData.message).to.include('sucesso');",
-									"});"
-								]
-							}
-						}
-					],
+					"name": "Criar Tipo de Profissional",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {"mode": "raw", "raw": "{\n    \"nome\": \"Fisioterapeuta\"\n}"},
+						"url": {"raw": "{{base_url}}/admin/tipos-profissional", "host": ["{{base_url}}"], "path": ["admin", "tipos-profissional"]}
+					},
+					"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+						"var jsonData = pm.response.json();",
+						"pm.collectionVariables.set('tipo_profissional_id', jsonData.data.id);",
+						"pm.test('Status 200', function() { pm.expect(jsonData.status).to.equal(200); });"
+					]}}]
+				},
+				{
+					"name": "Criar Profissional",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {"mode": "raw", "raw": "{\n    \"nome\": \"Profissional Teste\",\n    \"email\": \"profissional@teste.com\",\n    \"senha\": \"senha123\",\n    \"tipoProfissionalId\": {{tipo_profissional_id}},\n    \"registroProfissional\": \"123456\"\n}"},
+						"url": {"raw": "{{base_url}}/admin/profissionais", "host": ["{{base_url}}"], "path": ["admin", "profissionais"]}
+					},
+					"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+						"var jsonData = pm.response.json();",
+						"pm.collectionVariables.set('profissional_email', jsonData.data.emailUsuario);",
+						"pm.test('Status 200', function() { pm.expect(jsonData.status).to.equal(200); });"
+					]}}]
+				},
+				{
+					"name": "Login Profissional",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {"mode": "raw", "raw": "{\n    \"email\": \"{{profissional_email}}\",\n    \"password\": \"senha123\"\n}"},
+						"url": {"raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"]}
+					},
+					"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+						"var jsonData = pm.response.json();",
+						"if (jsonData.data && jsonData.data.token) { pm.collectionVariables.set('token', jsonData.data.token); }"
+					]}}]
+				},
+				{
+					"name": "Teste Profissional",
 					"request": {
 						"method": "GET",
 						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
+							{"key": "Authorization", "value": "Bearer {{token}}"}
 						],
-						"url": {
-							"raw": "{{base_url}}/admin/teste",
-							"host": ["{{base_url}}"],
-							"path": ["admin", "teste"]
-						}
-					}
-				},
+						"url": {"raw": "{{base_url}}/profissional/teste", "host": ["{{base_url}}"], "path": ["profissional", "teste"]}
+					},
+					"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+						"var jsonData = pm.response.json();",
+						"pm.test('Status 200', function() { pm.expect(jsonData.status).to.equal(200); });"
+					]}}]
+				}
+			]
+		},
+		{
+			"name": "Fluxo Paciente",
+			"item": [
 				{
-					"name": "4. Registro Profissional",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"pm.test('Token está presente', function() {",
-									"    pm.expect(pm.collectionVariables.get('token')).to.exist;",
-									"});",
-									"",
-									"var jsonData = pm.response.json();",
-									"pm.test('Resposta tem status 200', function() {",
-									"    pm.expect(jsonData.status).to.equal(200);",
-									"});",
-									"pm.test('Resposta tem mensagem de sucesso', function() {",
-									"    pm.expect(jsonData.message).to.include('sucesso');",
-									"});"
-								]
-							}
-						}
-					],
+					"name": "Login Admin",
 					"request": {
 						"method": "POST",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
+							{"key": "Content-Type", "value": "application/json"}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"nome\": \"Profissional Teste\",\n    \"email\": \"profissional@teste.com\",\n    \"senha\": \"senha123\",\n    \"role\": \"PROFISSIONAL\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/register",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "register"]
-						}
-					}
+						"body": {"mode": "raw", "raw": "{\n    \"email\": \"admin@sghss.com\",\n    \"password\": \"admin123\"\n}"},
+						"url": {"raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"]}
+					},
+					"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+						"var jsonData = pm.response.json();",
+						"if (jsonData.data && jsonData.data.token) { pm.collectionVariables.set('token', jsonData.data.token); }"
+					]}}]
 				},
 				{
-					"name": "5. Login Profissional",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData.data && jsonData.data.token) {",
-									"    pm.collectionVariables.set('token', jsonData.data.token);",
-									"    console.log('Token salvo com sucesso');",
-									"    pm.test('Token foi salvo', function() {",
-									"        pm.expect(pm.collectionVariables.get('token')).to.exist;",
-									"});",
-									"} else {",
-									"    console.log('Token não encontrado na resposta');",
-									"    pm.test('Token não encontrado', function() {",
-									"        pm.expect.fail('Token não encontrado na resposta');",
-									"    });",
-									"}"
-								]
-							}
-						}
-					],
+					"name": "Registrar Paciente",
 					"request": {
 						"method": "POST",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"email\": \"profissional@teste.com\",\n    \"senha\": \"senha123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/login",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "login"]
-						}
-					}
+						"body": {"mode": "raw", "raw": "{\n    \"nome\": \"Paciente Teste\",\n    \"email\": \"paciente@teste.com\",\n    \"senha\": \"senha123\",\n    \"role\": \"PACIENTE\"\n}"},
+						"url": {"raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"]}
+					},
+					"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+						"var jsonData = pm.response.json();",
+						"pm.test('Status 200', function() { pm.expect(jsonData.status).to.equal(200); });"
+					]}}]
 				},
 				{
-					"name": "6. Teste Profissional",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"pm.test('Token está presente', function() {",
-									"    pm.expect(pm.collectionVariables.get('token')).to.exist;",
-									"});",
-									"",
-									"var jsonData = pm.response.json();",
-									"pm.test('Resposta tem status 200', function() {",
-									"    pm.expect(jsonData.status).to.equal(200);",
-									"});",
-									"pm.test('Resposta tem data', function() {",
-									"    pm.expect(jsonData.data).to.include('profissional');",
-									"});",
-									"pm.test('Resposta tem mensagem de sucesso', function() {",
-									"    pm.expect(jsonData.message).to.include('sucesso');",
-									"});"
-								]
-							}
-						}
-					],
+					"name": "Login Paciente",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {"mode": "raw", "raw": "{\n    \"email\": \"paciente@teste.com\",\n    \"password\": \"senha123\"\n}"},
+						"url": {"raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"]}
+					},
+					"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+						"var jsonData = pm.response.json();",
+						"if (jsonData.data && jsonData.data.token) { pm.collectionVariables.set('token', jsonData.data.token); }"
+					]}}]
+				},
+				{
+					"name": "Teste Paciente",
 					"request": {
 						"method": "GET",
 						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
+							{"key": "Authorization", "value": "Bearer {{token}}"}
 						],
-						"url": {
-							"raw": "{{base_url}}/profissional/teste",
-							"host": ["{{base_url}}"],
-							"path": ["profissional", "teste"]
-						}
-					}
-				},
-				{
-					"name": "7. Login Admin (Novamente)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData.data && jsonData.data.token) {",
-									"    pm.collectionVariables.set('token', jsonData.data.token);",
-									"    console.log('Token do admin salvo com sucesso');",
-									"    pm.test('Token foi salvo', function() {",
-									"        pm.expect(pm.collectionVariables.get('token')).to.exist;",
-									"});",
-									"} else {",
-									"    console.log('Token não encontrado na resposta');",
-									"    pm.test('Token não encontrado', function() {",
-									"        pm.expect.fail('Token não encontrado na resposta');",
-									"    });",
-									"}"
-								]
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"email\": \"admin@sghss.com\",\n    \"senha\": \"admin123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/login",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "login"]
-						}
-					}
-				},
-				{
-					"name": "8. Registro Paciente",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"pm.test('Token está presente', function() {",
-									"    pm.expect(pm.collectionVariables.get('token')).to.exist;",
-									"});",
-									"",
-									"var jsonData = pm.response.json();",
-									"pm.test('Resposta tem status 200', function() {",
-									"    pm.expect(jsonData.status).to.equal(200);",
-									"});",
-									"pm.test('Resposta tem mensagem de sucesso', function() {",
-									"    pm.expect(jsonData.message).to.include('sucesso');",
-									"});"
-								]
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"nome\": \"Paciente Teste\",\n    \"email\": \"paciente@teste.com\",\n    \"senha\": \"senha123\",\n    \"role\": \"PACIENTE\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/register",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "register"]
-						}
-					}
-				},
-				{
-					"name": "9. Login Paciente",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData.data && jsonData.data.token) {",
-									"    pm.collectionVariables.set('token', jsonData.data.token);",
-									"    console.log('Token do paciente salvo com sucesso');",
-									"    pm.test('Token foi salvo', function() {",
-									"        pm.expect(pm.collectionVariables.get('token')).to.exist;",
-									"});",
-									"} else {",
-									"    console.log('Token não encontrado na resposta');",
-									"    pm.test('Token não encontrado', function() {",
-									"        pm.expect.fail('Token não encontrado na resposta');",
-									"    });",
-									"}"
-								]
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"email\": \"paciente@teste.com\",\n    \"senha\": \"senha123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/login",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "login"]
-						}
-					}
-				},
-				{
-					"name": "10. Teste Paciente",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"pm.test('Token está presente', function() {",
-									"    pm.expect(pm.collectionVariables.get('token')).to.exist;",
-									"});",
-									"",
-									"var jsonData = pm.response.json();",
-									"pm.test('Resposta tem status 200', function() {",
-									"    pm.expect(jsonData.status).to.equal(200);",
-									"});",
-									"pm.test('Resposta tem data', function() {",
-									"    pm.expect(jsonData.data).to.include('paciente');",
-									"});",
-									"pm.test('Resposta tem mensagem de sucesso', function() {",
-									"    pm.expect(jsonData.message).to.include('sucesso');",
-									"});"
-								]
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/paciente/teste",
-							"host": ["{{base_url}}"],
-							"path": ["paciente", "teste"]
-						}
-					}
+						"url": {"raw": "{{base_url}}/paciente/teste", "host": ["{{base_url}}"], "path": ["paciente", "teste"]}
+					},
+					"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+						"var jsonData = pm.response.json();",
+						"pm.test('Status 200', function() { pm.expect(jsonData.status).to.equal(200); });"
+					]}}]
 				}
 			]
 		}

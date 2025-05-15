@@ -375,6 +375,87 @@
 							]}}]
 						}
 					]
+				},
+				{
+					"name": "Pacientes",
+					"item": [
+						{
+							"name": "Criar Paciente",
+							"request": {
+								"method": "POST",
+								"header": [
+									{"key": "Content-Type", "value": "application/json"},
+									{"key": "Authorization", "value": "Bearer {{token}}"}
+								],
+								"body": {"mode": "raw", "raw": "{\n    \"nome\": \"Paciente Teste\",\n    \"dataNascimento\": \"1990-01-01\",\n    \"cpf\": \"12345678900\",\n    \"telefone\": \"11999999999\",\n    \"endereco\": \"Rua Exemplo, 123\",\n    \"email\": \"paciente@teste.com\",\n    \"senha\": \"senha123\"\n}"},
+								"url": {"raw": "{{base_url}}/admin/pacientes", "host": ["{{base_url}}"], "path": ["admin", "pacientes"]}
+							},
+							"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+								"var jsonData = pm.response.json();",
+								"pm.test('Status 200', function() { pm.expect(jsonData.status).to.equal(200); });",
+								"pm.collectionVariables.set('paciente_id', jsonData.data.id);"
+							]}}]
+						},
+						{
+							"name": "Listar Pacientes",
+							"request": {
+								"method": "GET",
+								"header": [
+									{"key": "Authorization", "value": "Bearer {{token}}"}
+								],
+								"url": {"raw": "{{base_url}}/admin/pacientes", "host": ["{{base_url}}"], "path": ["admin", "pacientes"]}
+							},
+							"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+								"var jsonData = pm.response.json();",
+								"pm.test('Status 200', function() { pm.expect(jsonData.status).to.equal(200); });",
+								"pm.test('É array', function() { pm.expect(Array.isArray(jsonData.data)).to.be.true; });"
+							]}}]
+						},
+						{
+							"name": "Buscar Paciente por ID",
+							"request": {
+								"method": "GET",
+								"header": [
+									{"key": "Authorization", "value": "Bearer {{token}}"}
+								],
+								"url": {"raw": "{{base_url}}/admin/pacientes/{{paciente_id}}", "host": ["{{base_url}}"], "path": ["admin", "pacientes", "{{paciente_id}}"]}
+							},
+							"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+								"var jsonData = pm.response.json();",
+								"pm.test('Status 200 ou 404', function() { pm.expect([200,404]).to.include(jsonData.status); });"
+							]}}]
+						},
+						{
+							"name": "Atualizar Paciente",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{"key": "Content-Type", "value": "application/json"},
+									{"key": "Authorization", "value": "Bearer {{token}}"}
+								],
+								"body": {"mode": "raw", "raw": "{\n    \"nome\": \"Paciente Atualizado\",\n    \"dataNascimento\": \"1991-02-02\",\n    \"cpf\": \"98765432100\",\n    \"telefone\": \"11888888888\",\n    \"endereco\": \"Rua Nova, 456\",\n    \"email\": \"paciente@teste.com\",\n    \"senha\": \"senha123\"\n}"},
+								"url": {"raw": "{{base_url}}/admin/pacientes/{{paciente_id}}", "host": ["{{base_url}}"], "path": ["admin", "pacientes", "{{paciente_id}}"]}
+							},
+							"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+								"var jsonData = pm.response.json();",
+								"pm.test('Status 200', function() { pm.expect(jsonData.status).to.equal(200); });"
+							]}}]
+						},
+						{
+							"name": "Deletar Paciente",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{"key": "Authorization", "value": "Bearer {{token}}"}
+								],
+								"url": {"raw": "{{base_url}}/admin/pacientes/{{paciente_id}}", "host": ["{{base_url}}"], "path": ["admin", "pacientes", "{{paciente_id}}"]}
+							},
+							"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+								"var jsonData = pm.response.json();",
+								"pm.test('Status 200', function() { pm.expect(jsonData.status).to.equal(200); });"
+							]}}]
+						}
+					]
 				}
 			]
 		},
@@ -616,6 +697,58 @@
 					"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
 						"var jsonData = pm.response.json();",
 						"pm.test('Status 200', function() { pm.expect(jsonData.status).to.equal(200); });"
+					]}}]
+				}
+			]
+		},
+		{
+			"name": "Fluxo Inclusão Paciente",
+			"item": [
+				{
+					"name": "Login Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {"mode": "raw", "raw": "{\n    \"email\": \"admin@sghss.com\",\n    \"password\": \"admin123\"\n}"},
+						"url": {"raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"]}
+					},
+					"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+						"var jsonData = pm.response.json();",
+						"if (jsonData.data && jsonData.data.token) { pm.collectionVariables.set('token', jsonData.data.token); }"
+					]}}]
+				},
+				{
+					"name": "Criar Paciente",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {"mode": "raw", "raw": "{\n    \"nome\": \"Paciente Teste\",\n    \"dataNascimento\": \"1990-01-01\",\n    \"cpf\": \"12345678900\",\n    \"telefone\": \"11999999999\",\n    \"endereco\": \"Rua Exemplo, 123\",\n    \"email\": \"paciente@teste.com\",\n    \"senha\": \"senha123\"\n}"},
+						"url": {"raw": "{{base_url}}/admin/pacientes", "host": ["{{base_url}}"], "path": ["admin", "pacientes"]}
+					},
+					"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+						"var jsonData = pm.response.json();",
+						"pm.test('Status 200', function() { pm.expect(jsonData.status).to.equal(200); });",
+						"pm.collectionVariables.set('paciente_id', jsonData.data.id);"
+					]}}]
+				},
+				{
+					"name": "Buscar Paciente por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {"raw": "{{base_url}}/admin/pacientes/{{paciente_id}}", "host": ["{{base_url}}"], "path": ["admin", "pacientes", "{{paciente_id}}"]}
+					},
+					"event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+						"var jsonData = pm.response.json();",
+						"pm.test('Status 200', function() { pm.expect(jsonData.status).to.equal(200); });",
+						"pm.test('Nome correto', function() { pm.expect(jsonData.data.nome).to.equal('Paciente Teste'); });"
 					]}}]
 				}
 			]

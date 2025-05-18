@@ -57,7 +57,7 @@ class AdminPacienteControllerTest {
     void deveCriarPaciente() {
         when(pacienteService.criar(any(PacienteRequestDTO.class))).thenReturn(responseDTO);
         ResponseEntity<ApiResponse<PacienteResponseDTO>> response = controller.criar(requestDTO);
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertEquals("Paciente criado com sucesso", response.getBody().getMessage());
         assertEquals("Paciente Teste", response.getBody().getData().getNome());
     }
@@ -66,7 +66,7 @@ class AdminPacienteControllerTest {
     void deveListarTodosPacientes() {
         when(pacienteService.listarTodos()).thenReturn(Arrays.asList(responseDTO));
         ResponseEntity<ApiResponse<List<PacienteResponseDTO>>> response = controller.listarTodos();
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertEquals(1, response.getBody().getData().size());
     }
 
@@ -74,7 +74,7 @@ class AdminPacienteControllerTest {
     void deveBuscarPacientePorIdExistente() {
         when(pacienteService.buscarPorId(1L)).thenReturn(Optional.of(responseDTO));
         ResponseEntity<ApiResponse<PacienteResponseDTO>> response = controller.buscarPorId(1L);
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertEquals("Paciente Teste", response.getBody().getData().getNome());
     }
 
@@ -82,14 +82,14 @@ class AdminPacienteControllerTest {
     void deveRetornarNotFoundAoBuscarPacientePorIdInexistente() {
         when(pacienteService.buscarPorId(anyLong())).thenReturn(Optional.empty());
         ResponseEntity<ApiResponse<PacienteResponseDTO>> response = controller.buscarPorId(2L);
-        assertEquals(404, response.getStatusCodeValue());
+        assertEquals(404, response.getStatusCode().value());
     }
 
     @Test
     void deveAtualizarPaciente() {
         when(pacienteService.atualizar(eq(1L), any(PacienteRequestDTO.class))).thenReturn(responseDTO);
         ResponseEntity<ApiResponse<PacienteResponseDTO>> response = controller.atualizar(1L, requestDTO);
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertEquals("Paciente atualizado com sucesso", response.getBody().getMessage());
     }
 
@@ -97,7 +97,7 @@ class AdminPacienteControllerTest {
     void deveDeletarPaciente() {
         doNothing().when(pacienteService).deletar(1L);
         ResponseEntity<ApiResponse<Void>> response = controller.deletar(1L);
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertEquals("Paciente deletado com sucesso", response.getBody().getMessage());
     }
 } 

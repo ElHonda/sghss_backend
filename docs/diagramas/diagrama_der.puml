@@ -1,0 +1,128 @@
+@startuml "DER SGHSS"
+
+entity "usuarios" as usuarios {
+  +id: PK
+  nome
+  email
+  senha
+  role
+}
+
+entity "pacientes" as pacientes {
+  +id: PK
+  usuario_id: FK
+  nome
+  data_nascimento
+  cpf
+  telefone
+  endereco
+}
+
+entity "profissionais" as profissionais {
+  +id: PK
+  usuario_id: FK
+  tipo_profissional_id: FK
+  registro_profissional
+}
+
+entity "tipos_profissional" as tipos_profissional {
+  +id: PK
+  nome
+}
+
+entity "historicos_clinicos" as historicos_clinicos {
+  +id: PK
+  paciente_id: FK
+  descricao
+  data
+}
+
+entity "consultas" as consultas {
+  +id: PK
+  paciente_id: FK
+  profissional_id: FK
+  data_hora
+  status
+  teleconsulta
+  videochamada_url
+}
+
+entity "agendas" as agendas {
+  +id: PK
+  profissional_id: FK
+}
+
+entity "prontuarios" as prontuarios {
+  +id: PK
+  paciente_id: FK
+  profissional_id: FK
+  data
+  descricao
+  online
+}
+
+entity "receitas_digitais" as receitas_digitais {
+  +id: PK
+  profissional_id: FK
+  paciente_id: FK
+  medicamentos
+  data
+}
+
+entity "notificacoes" as notificacoes {
+  +id: PK
+  destinatario_id: FK
+  mensagem
+  data_envio
+  lida
+}
+
+entity "internacoes" as internacoes {
+  +id: PK
+  paciente_id: FK
+  data_entrada
+  data_saida
+  motivo
+}
+
+entity "relatorios" as relatorios {
+  +id: PK
+  tipo
+  gerado_por_id: FK
+  data_geracao
+  conteudo
+}
+
+entity "logs_auditoria" as logs_auditoria {
+  +id: PK
+  usuario_id: FK
+  acao
+  data_hora
+}
+
+entity "consentimentos_lgpd" as consentimentos_lgpd {
+  +id: PK
+  paciente_id: FK
+  consentiu
+  data
+}
+
+' RELACIONAMENTOS
+pacientes::usuario_id -- usuarios::id
+profissionais::usuario_id -- usuarios::id
+profissionais::tipo_profissional_id -- tipos_profissional::id
+historicos_clinicos::paciente_id -- pacientes::id
+consultas::paciente_id -- pacientes::id
+consultas::profissional_id -- profissionais::id
+agendas::profissional_id -- profissionais::id
+prontuarios::paciente_id -- pacientes::id
+prontuarios::profissional_id -- profissionais::id
+receitas_digitais::profissional_id -- profissionais::id
+receitas_digitais::paciente_id -- pacientes::id
+notificacoes::destinatario_id -- usuarios::id
+internacoes::paciente_id -- pacientes::id
+relatorios::gerado_por_id -- usuarios::id
+logs_auditoria::usuario_id -- usuarios::id
+consentimentos_lgpd::paciente_id -- pacientes::id
+
+@enduml 

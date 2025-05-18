@@ -1,0 +1,158 @@
+@startuml "Diagrama de Classes SGHSS"
+
+' Papéis de usuário
+enum Role {
+  ADMINISTRADOR
+  PROFISSIONAL
+  PACIENTE
+}
+
+class Usuario {
+  - id: Long
+  - nome: String
+  - email: String
+  - senha: String
+  - role: Role
+  + getAuthorities()
+  + isEnabled()
+}
+
+class Paciente {
+  - id: Long
+  - usuario: Usuario
+  - nome: String
+  - dataNascimento: String
+  - cpf: String      // criptografado
+  - telefone: String // criptografado
+  - endereco: String // criptografado
+  - historicoClinico: List<HistoricoClinico>
+  - consentimentoLGPD: ConsentimentoLGPD
+  + agendarConsulta()
+  + anonimizarDados()
+}
+
+class Profissional {
+  - id: Long
+  - usuario: Usuario
+  - tipoProfissional: TipoProfissional
+  - registroProfissional: String
+  + registrarProntuario()
+}
+
+class TipoProfissional {
+  - id: Long
+  - nome: String
+}
+
+abstract class Auditable {
+  - criadoEm: LocalDateTime
+  - atualizadoEm: LocalDateTime
+  - criadoPor: Usuario
+  - atualizadoPor: Usuario
+}
+
+' --- ENTIDADES PLANEJADAS (não implementadas) ---
+class Agenda {
+  - id: Long
+  - profissional: Profissional
+  - consultas: List<Consulta>
+}
+
+class Consulta {
+  - id: Long
+  - paciente: Paciente
+  - profissional: Profissional
+  - dataHora: DateTime
+  - status: String
+  - teleconsulta: Boolean
+  - videochamadaUrl: String
+  + realizarConsulta()
+}
+
+class Prontuario {
+  - id: Long
+  - paciente: Paciente
+  - profissional: Profissional
+  - data: DateTime
+  - descricao: String
+  - receitas: List<ReceitaDigital>
+  - online: Boolean
+}
+
+class ReceitaDigital {
+  - id: Long
+  - profissional: Profissional
+  - paciente: Paciente
+  - medicamentos: String
+  - data: DateTime
+}
+
+class HistoricoClinico {
+  - id: Long
+  - paciente: Paciente
+  - descricao: String
+  - data: DateTime
+}
+
+class Notificacao {
+  - id: Long
+  - destinatario: Usuario
+  - mensagem: String
+  - dataEnvio: DateTime
+  - lida: Boolean
+}
+
+class Internacao {
+  - id: Long
+  - paciente: Paciente
+  - dataEntrada: DateTime
+  - dataSaida: DateTime
+  - motivo: String
+}
+
+class Relatorio {
+  - id: Long
+  - tipo: String
+  - geradoPor: Usuario
+  - dataGeracao: DateTime
+  - conteudo: String
+}
+
+class LogAuditoria {
+  - id: Long
+  - usuario: Usuario
+  - acao: String
+  - dataHora: DateTime
+}
+
+class ConsentimentoLGPD {
+  - id: Long
+  - paciente: Paciente
+  - consentiu: Boolean
+  - data: DateTime
+}
+
+' --- RELACIONAMENTOS ---
+Usuario <|-- Paciente
+Usuario <|-- Profissional
+TipoProfissional "1" -- "0..*" Profissional
+Auditable <|-- Usuario
+Auditable <|-- Paciente
+Auditable <|-- Profissional
+Auditable <|-- TipoProfissional
+
+Paciente "1" -- "0..*" HistoricoClinico
+Paciente "1" -- "0..*" Prontuario
+Profissional "1" -- "1" Agenda
+Agenda "1" -- "0..*" Consulta
+Consulta "1" -- "1" Paciente
+Consulta "1" -- "1" Profissional
+Prontuario "1" -- "0..*" ReceitaDigital
+Paciente "1" -- "1" ConsentimentoLGPD
+Usuario "1" -- "0..*" LogAuditoria
+Usuario "1" -- "0..*" Notificacao
+Paciente "1" -- "0..*" Internacao
+Usuario <|-- Administrador
+Administrador "1" -- "0..*" Relatorio
+
+@enduml 

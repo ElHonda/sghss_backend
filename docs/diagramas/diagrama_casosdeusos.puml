@@ -1,0 +1,74 @@
+@startuml "Diagrama de Casos de Uso SGHSS"
+left to right direction
+skinparam actorStyle awesome
+
+actor Administrador
+actor "Profissional de Saúde" as Prof
+actor Paciente
+
+package "Autenticação e Acesso" {
+  (Login/Autenticação) as UC_Login
+  (Registrar Usuário) as UC_RegUser
+}
+
+package "Administração" {
+  (Gerenciar Profissionais) as UC_Prof
+  (Gerenciar Tipos de Profissional) as UC_TipoProf
+  (Gerenciar Pacientes) as UC_Pac
+  (Gerenciar Internações) as UC_Internacao
+  (Gerar Relatórios) as UC_Relatorio
+  (Visualizar Logs/Auditoria) as UC_Logs
+}
+
+package "Atendimento" {
+  (Agendar Consulta) as UC_Agendamento
+  (Realizar Consulta) as UC_Consulta
+  (Criar/Atualizar Prontuário) as UC_Prontuario
+  (Gerar Receita Digital) as UC_Receita
+  (Telemedicina/Videochamada) as UC_Telemed
+  (Enviar Notificação) as UC_Notificacao
+}
+
+package "Serviços ao Paciente" {
+  (Visualizar Consultas) as UC_ViewConsultas
+  (Visualizar Prontuário) as UC_ViewPront
+  (Visualizar Receitas) as UC_ViewReceitas
+  (Receber Notificações) as UC_RecebeNotif
+  (Consentimento LGPD) as UC_LGPD
+}
+
+' Associações
+Administrador -- UC_Login
+Administrador -- UC_RegUser
+Administrador -- UC_Prof
+Administrador -- UC_TipoProf
+Administrador -- UC_Pac
+Administrador -- UC_Internacao
+Administrador -- UC_Relatorio
+Administrador -- UC_Logs
+Administrador -- UC_Notificacao
+
+Prof -- UC_Login
+Prof -- UC_Consulta
+Prof -- UC_Agendamento
+Prof -- UC_Prontuario
+Prof -- UC_Receita
+Prof -- UC_Telemed
+Prof -- UC_Notificacao
+
+Paciente -- UC_Login
+Paciente -- UC_ViewConsultas
+Paciente -- UC_ViewPront
+Paciente -- UC_ViewReceitas
+Paciente -- UC_RecebeNotif
+Paciente -- UC_LGPD
+Paciente -- UC_Agendamento
+Paciente -- UC_Consulta
+Paciente -- UC_Notificacao
+
+' Relações de include/extend
+UC_Prontuario --> UC_Consulta : <<include>>
+UC_Receita --> UC_Consulta : <<include>>
+UC_Telemed --> UC_Consulta : <<extend>>
+
+@enduml

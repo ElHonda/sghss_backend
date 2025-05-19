@@ -50,8 +50,8 @@ class ProfissionalConsultaControllerTest {
 
     @Test
     void agendarConsulta_deveRetornarSucesso() {
-        when(consultaService.criar(anyLong(), any(ConsultaRequestDTO.class))).thenReturn(responseDTO);
-        ResponseEntity<ApiResponse<ConsultaResponseDTO>> resp = controller.agendarConsulta(requestDTO, 1L);
+        when(consultaService.criarParaProfissionalAutenticado(any(ConsultaRequestDTO.class))).thenReturn(responseDTO);
+        ResponseEntity<ApiResponse<ConsultaResponseDTO>> resp = controller.agendarConsulta(requestDTO);
         assertEquals(200, resp.getStatusCode().value());
         assertNotNull(resp.getBody());
         assertEquals(10L, resp.getBody().getData().getId());
@@ -60,8 +60,8 @@ class ProfissionalConsultaControllerTest {
 
     @Test
     void listarConsultas_deveRetornarLista() {
-        when(consultaService.listarPorProfissional(1L)).thenReturn(Arrays.asList(responseDTO));
-        ResponseEntity<ApiResponse<List<ConsultaResponseDTO>>> resp = controller.listarConsultas(1L);
+        when(consultaService.listarPorProfissionalAutenticado()).thenReturn(Arrays.asList(responseDTO));
+        ResponseEntity<ApiResponse<List<ConsultaResponseDTO>>> resp = controller.listarConsultas();
         assertEquals(200, resp.getStatusCode().value());
         assertNotNull(resp.getBody());
         assertEquals(1, resp.getBody().getData().size());

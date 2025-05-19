@@ -1,6 +1,7 @@
 package com.sghss.backend.controller;
 
 import com.sghss.backend.dto.ApiResponse;
+import com.sghss.backend.dto.ConsultaRequestDTO;
 import com.sghss.backend.dto.ConsultaResponseDTO;
 import com.sghss.backend.service.ConsultaService;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +19,14 @@ public class PacienteConsultaController {
     private final ConsultaService consultaService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ConsultaResponseDTO>>> listarConsultas(@RequestParam Long pacienteId) {
-        List<ConsultaResponseDTO> consultas = consultaService.listarPorPaciente(pacienteId);
+    public ResponseEntity<ApiResponse<List<ConsultaResponseDTO>>> listarConsultas() {
+        List<ConsultaResponseDTO> consultas = consultaService.listarPorPacienteAutenticado();
         return ResponseEntity.ok(ApiResponse.success(consultas));
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<ConsultaResponseDTO>> agendarConsulta(@RequestBody ConsultaRequestDTO dto) {
+        ConsultaResponseDTO response = consultaService.criarParaPacienteAutenticado(dto);
+        return ResponseEntity.ok(ApiResponse.success(response, "Consulta agendada com sucesso"));
     }
 } 

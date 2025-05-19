@@ -19,14 +19,14 @@ public class ProfissionalConsultaController {
     private final ConsultaService consultaService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<ConsultaResponseDTO>> agendarConsulta(@RequestBody ConsultaRequestDTO dto, @RequestParam Long profissionalId) {
-        ConsultaResponseDTO response = consultaService.criar(profissionalId, dto);
+    public ResponseEntity<ApiResponse<ConsultaResponseDTO>> agendarConsulta(@RequestBody ConsultaRequestDTO dto) {
+        ConsultaResponseDTO response = consultaService.criarParaProfissionalAutenticado(dto);
         return ResponseEntity.ok(ApiResponse.success(response, "Consulta agendada com sucesso"));
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ConsultaResponseDTO>>> listarConsultas(@RequestParam Long profissionalId) {
-        List<ConsultaResponseDTO> consultas = consultaService.listarPorProfissional(profissionalId);
+    public ResponseEntity<ApiResponse<List<ConsultaResponseDTO>>> listarConsultas() {
+        List<ConsultaResponseDTO> consultas = consultaService.listarPorProfissionalAutenticado();
         return ResponseEntity.ok(ApiResponse.success(consultas));
     }
 } 

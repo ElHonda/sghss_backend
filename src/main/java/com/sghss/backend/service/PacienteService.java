@@ -78,7 +78,7 @@ public class PacienteService {
 
     private PacienteResponseDTO toResponseDTO(Paciente paciente) {
         PacienteResponseDTO dto = new PacienteResponseDTO();
-        dto.setId(paciente.getId());
+        dto.setId(paciente.getUsuario().getId());
         dto.setNome(paciente.getNome());
         dto.setDataNascimento(paciente.getDataNascimento());
         dto.setCpf(CryptoUtil.decrypt(paciente.getCpf()));

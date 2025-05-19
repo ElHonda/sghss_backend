@@ -14,6 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -178,6 +181,182 @@ class ConsultaServiceTest {
         assertEquals(22L, dto.getId());
         assertEquals(99L, dto.getProfissionalId());
         assertNull(dto.getProfissionalNome());
+    }
+
+    @Test
+    void criarParaProfissionalAutenticado_deveAgendarConsulta() {
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("profissional@email.com");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        profissional.getUsuario().setEmail("profissional@email.com");
+        when(profissionalRepository.findAll()).thenReturn(List.of(profissional));
+        when(profissionalRepository.findById(1L)).thenReturn(Optional.of(profissional));
+        when(pacienteRepository.findById(2L)).thenReturn(Optional.of(paciente));
+        when(consultaRepository.save(any(Consulta.class))).thenReturn(consulta);
+        ConsultaResponseDTO dto = consultaService.criarParaProfissionalAutenticado(requestDTO);
+        assertNotNull(dto);
+        assertEquals(10L, dto.getId());
+    }
+
+    @Test
+    void criarParaPacienteAutenticado_deveAgendarConsulta() {
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("paciente@email.com");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        paciente.getUsuario().setEmail("paciente@email.com");
+        when(pacienteRepository.findByUsuarioEmail("paciente@email.com")).thenReturn(paciente);
+        when(consultaRepository.save(any(Consulta.class))).thenReturn(consulta);
+        ConsultaRequestDTO dtoReq = new ConsultaRequestDTO();
+        dtoReq.setDataHora(consulta.getDataHora());
+        dtoReq.setStatus("AGENDADA");
+        dtoReq.setTeleconsulta(false);
+        dtoReq.setVideochamadaUrl(null);
+        ConsultaResponseDTO dto = consultaService.criarParaPacienteAutenticado(dtoReq);
+        assertNotNull(dto);
+        assertEquals(10L, dto.getId());
+    }
+
+    @Test
+    void listarPorProfissionalAutenticado_deveRetornarConsultas() {
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("profissional@email.com");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        profissional.getUsuario().setEmail("profissional@email.com");
+        when(profissionalRepository.findAll()).thenReturn(List.of(profissional));
+        when(profissionalRepository.findById(1L)).thenReturn(Optional.of(profissional));
+        when(consultaRepository.findByProfissionalId(1L)).thenReturn(List.of(consulta));
+        List<ConsultaResponseDTO> lista = consultaService.listarPorProfissionalAutenticado();
+        assertEquals(1, lista.size());
+        assertEquals(10L, lista.get(0).getId());
+    }
+
+    @Test
+    void listarPorPacienteAutenticado_deveRetornarConsultas() {
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("paciente@email.com");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        paciente.getUsuario().setEmail("paciente@email.com");
+        when(pacienteRepository.findByUsuarioEmail("paciente@email.com")).thenReturn(paciente);
+        when(consultaRepository.findByPacienteId(2L)).thenReturn(List.of(consulta));
+        List<ConsultaResponseDTO> lista = consultaService.listarPorPacienteAutenticado();
+        assertEquals(1, lista.size());
+        assertEquals(10L, lista.get(0).getId());
+    }
+
+    @Test
+    void criarParaProfissionalAutenticado_deveLancarExcecaoSeProfissionalNaoEncontradoPorEmail() {
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("naoexiste@email.com");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(profissionalRepository.findAll()).thenReturn(List.of());
+        assertThrows(IllegalArgumentException.class, () -> consultaService.criarParaProfissionalAutenticado(requestDTO));
+    }
+
+    @Test
+    void criarParaProfissionalAutenticado_deveLancarExcecaoSeProfissionalNaoEncontradoPorId() {
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("profissional@email.com");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        Profissional prof = new Profissional();
+        Usuario usuario = new Usuario();
+        usuario.setEmail("profissional@email.com");
+        prof.setUsuario(usuario);
+        prof.setId(99L);
+        when(profissionalRepository.findAll()).thenReturn(List.of(prof));
+        when(profissionalRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(IllegalArgumentException.class, () -> consultaService.criarParaProfissionalAutenticado(requestDTO));
+    }
+
+    @Test
+    void criarParaProfissionalAutenticado_deveLancarExcecaoSePacienteNaoEncontrado() {
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("profissional@email.com");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        profissional.getUsuario().setEmail("profissional@email.com");
+        when(profissionalRepository.findAll()).thenReturn(List.of(profissional));
+        when(profissionalRepository.findById(1L)).thenReturn(Optional.of(profissional));
+        when(pacienteRepository.findById(2L)).thenReturn(Optional.empty());
+        assertThrows(IllegalArgumentException.class, () -> consultaService.criarParaProfissionalAutenticado(requestDTO));
+    }
+
+    @Test
+    void criarParaPacienteAutenticado_deveLancarExcecaoSePacienteNaoEncontrado() {
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("naoexiste@email.com");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(pacienteRepository.findByUsuarioEmail("naoexiste@email.com")).thenReturn(null);
+        ConsultaRequestDTO dtoReq = new ConsultaRequestDTO();
+        dtoReq.setDataHora(LocalDateTime.now());
+        dtoReq.setStatus("AGENDADA");
+        dtoReq.setTeleconsulta(false);
+        dtoReq.setVideochamadaUrl(null);
+        assertThrows(IllegalArgumentException.class, () -> consultaService.criarParaPacienteAutenticado(dtoReq));
+    }
+
+    @Test
+    void listarPorProfissionalAutenticado_deveLancarExcecaoSeProfissionalNaoEncontradoPorEmail() {
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("naoexiste@email.com");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(profissionalRepository.findAll()).thenReturn(List.of());
+        assertThrows(IllegalArgumentException.class, () -> consultaService.listarPorProfissionalAutenticado());
+    }
+
+    @Test
+    void listarPorProfissionalAutenticado_deveLancarExcecaoSeProfissionalNaoEncontradoPorId() {
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("profissional@email.com");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        Profissional prof = new Profissional();
+        Usuario usuario = new Usuario();
+        usuario.setEmail("profissional@email.com");
+        prof.setUsuario(usuario);
+        prof.setId(99L);
+        when(profissionalRepository.findAll()).thenReturn(List.of(prof));
+        when(profissionalRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(IllegalArgumentException.class, () -> consultaService.listarPorProfissionalAutenticado());
+    }
+
+    @Test
+    void listarPorPacienteAutenticado_deveLancarExcecaoSePacienteNaoEncontrado() {
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("naoexiste@email.com");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(pacienteRepository.findByUsuarioEmail("naoexiste@email.com")).thenReturn(null);
+        assertThrows(IllegalArgumentException.class, () -> consultaService.listarPorPacienteAutenticado());
     }
 
     // Utilitário para acessar o método privado toResponseDTO

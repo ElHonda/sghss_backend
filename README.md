@@ -540,6 +540,42 @@ Backend do Sistema de Gestão de Saúde e Serviços Sociais (SGHSS).
   }
   ```
 
+### Histórico Clínico do Paciente
+
+- **GET** `/api/pacientes/{pacienteId}/historico-clinico`  
+  Lista o histórico clínico do paciente
+  
+  **Headers:**
+  - Authorization: Bearer <token>
+  
+  **Response:**
+  ```json
+  [
+    {
+      "id": 1,
+      "descricao": "Consulta de rotina realizada.",
+      "data": "2024-06-01T10:00:00",
+      "paciente": { /* dados resumidos do paciente */ }
+    }
+  ]
+  ```
+
+- **GET** `/api/historico-clinico/{id}`  
+  Busca um registro de histórico clínico pelo ID
+  
+  **Headers:**
+  - Authorization: Bearer <token>
+  
+  **Response:**
+  ```json
+  {
+    "id": 1,
+    "descricao": "Consulta de rotina realizada.",
+    "data": "2024-06-01T10:00:00",
+    "paciente": { /* dados resumidos do paciente */ }
+  }
+  ```
+
 ### Observações
 - Todos os endpoints (exceto `/public/ping` e `/auth/login`) exigem autenticação via JWT no header `Authorization: Bearer <token>`.
 - Os exemplos de body e resposta podem variar conforme regras de negócio e validações.

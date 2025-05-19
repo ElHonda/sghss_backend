@@ -576,6 +576,100 @@ Backend do Sistema de Gestão de Saúde e Serviços Sociais (SGHSS).
   }
   ```
 
+### Consultas
+
+#### Profissional
+
+- **POST** `/profissional/consultas?profissionalId={id}`  
+Agendar uma nova consulta (apenas para profissionais)
+
+**Headers:**
+- Authorization: Bearer <token>
+- Content-Type: application/json
+
+**Request Body:**
+```json
+{
+  "pacienteId": 2,
+  "dataHora": "2024-06-01T14:00:00",
+  "teleconsulta": false,
+  "videochamadaUrl": null,
+  "status": "AGENDADA"
+}
+```
+**Response:**
+```json
+{
+  "status": 200,
+  "message": "Consulta agendada com sucesso",
+  "data": {
+    "id": 10,
+    "pacienteId": 2,
+    "pacienteNome": "Paciente Teste",
+    "profissionalId": 1,
+    "profissionalNome": "Profissional Teste",
+    "dataHora": "2024-06-01T14:00:00",
+    "status": "AGENDADA",
+    "teleconsulta": false,
+    "videochamadaUrl": null
+  }
+}
+```
+
+- **GET** `/profissional/consultas?profissionalId={id}`  
+Lista todas as consultas do profissional logado
+
+**Headers:**
+- Authorization: Bearer <token>
+**Response:**
+```json
+{
+  "status": 200,
+  "message": null,
+  "data": [
+    {
+      "id": 10,
+      "pacienteId": 2,
+      "pacienteNome": "Paciente Teste",
+      "profissionalId": 1,
+      "profissionalNome": "Profissional Teste",
+      "dataHora": "2024-06-01T14:00:00",
+      "status": "AGENDADA",
+      "teleconsulta": false,
+      "videochamadaUrl": null
+    }
+  ]
+}
+```
+
+#### Paciente
+
+- **GET** `/paciente/consultas?pacienteId={id}`  
+Lista todas as consultas do paciente logado
+
+**Headers:**
+- Authorization: Bearer <token>
+**Response:**
+```json
+{
+  "status": 200,
+  "message": null,
+  "data": [
+    {
+      "id": 10,
+      "pacienteId": 2,
+      "pacienteNome": "Paciente Teste",
+      "profissionalId": 1,
+      "profissionalNome": "Profissional Teste",
+      "dataHora": "2024-06-01T14:00:00",
+      "status": "AGENDADA",
+      "teleconsulta": false,
+      "videochamadaUrl": null
+    }
+  ]
+}
+```
+
 ### Observações
 - Todos os endpoints (exceto `/public/ping` e `/auth/login`) exigem autenticação via JWT no header `Authorization: Bearer <token>`.
 - Os exemplos de body e resposta podem variar conforme regras de negócio e validações.

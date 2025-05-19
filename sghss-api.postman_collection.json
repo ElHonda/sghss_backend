@@ -787,6 +787,70 @@
 					]}}]
 				}
 			]
+		},
+		{
+			"name": "Consultas",
+			"item": [
+				{
+					"name": "Agendar Consulta (Profissional)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"pacienteId\": 2,\n  \"dataHora\": \"2024-06-01T14:00:00\",\n  \"teleconsulta\": false,\n  \"videochamadaUrl\": null,\n  \"status\": \"AGENDADA\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/profissional/consultas?profissionalId=1",
+							"host": ["{{base_url}}"],
+							"path": ["profissional", "consultas"],
+							"query": [
+								{ "key": "profissionalId", "value": "1" }
+							]
+						},
+						"description": "Agendar uma nova consulta como profissional."
+					}
+				},
+				{
+					"name": "Listar Consultas (Profissional)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/profissional/consultas?profissionalId=1",
+							"host": ["{{base_url}}"],
+							"path": ["profissional", "consultas"],
+							"query": [
+								{ "key": "profissionalId", "value": "1" }
+							]
+						},
+						"description": "Listar todas as consultas do profissional."
+					}
+				},
+				{
+					"name": "Listar Consultas (Paciente)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": {
+							"raw": "{{base_url}}/paciente/consultas?pacienteId=2",
+							"host": ["{{base_url}}"],
+							"path": ["paciente", "consultas"],
+							"query": [
+								{ "key": "pacienteId", "value": "2" }
+							]
+						},
+						"description": "Listar todas as consultas do paciente."
+					}
+				}
+			]
 		}
 	],
 	"variable": [
